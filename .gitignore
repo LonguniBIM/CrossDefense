@@ -1,0 +1,24 @@
+# Local/private configuration
+.env
+.env.*
+!.env.example
+
+# Logs and transient output
+*.log
+.tmp/
+tmp/
+.cache/
+coverage/
+dist/
+build/
+
+# Local scratch/harness output may be refined after harness setup
+.scratch/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Harness core maintenance binary
+scripts/bin/harness
+scripts/bin/harness.exe
