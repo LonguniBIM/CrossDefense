@@ -68,8 +68,8 @@ Out of scope:
 - [x] Product, Platform, and Technical Architecture authority located.
 - [x] Technology Selection + PoC backlog confirmed as the current decision frontier.
 - [x] Dedicated PoC branch created: `tech-selection-poc`.
-- [ ] Research and record candidate technology matrix.
-- [ ] Define and execute PoC-1; record evidence and verdict.
+- [x] Research and record candidate technology matrix.
+- [x] Define and execute PoC-1; record evidence and verdict.
 - [ ] Define and execute PoC-3; record evidence and verdict.
 - [ ] Define and execute PoC-6; record evidence and verdict.
 - [ ] Define and execute PoC-2; record evidence and verdict.
@@ -82,6 +82,8 @@ Out of scope:
 
 - 2026-09-29: Technology selection is evidence-first. Familiarity alone is not authority for framework or library selection.
 - 2026-09-29: PoC artifacts remain isolated from production paths until an explicit decision promotes a validated approach.
+- 2026-09-29: PoC-1 passed across 60 FPS, 144 FPS, 30 FPS, jittered frames, and a simulated three-second stall with identical terminal digest `88da6a92`; this supports fixed-step render-independent simulation and isolated seeded RNG streams.
+- 2026-09-29: PoC-1 does not justify a Web Worker. Keep the simulation host-agnostic and defer main-thread versus Worker selection until browser/rendering evidence exists.
 
 ## Validation
 
