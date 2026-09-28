@@ -43,6 +43,7 @@ and behavior-level proof; do not create parallel control-plane state.
 - **Architecture Decisions**: [docs/adr/](docs/adr/) and [docs/decisions/DECISION_LOG.md](docs/decisions/DECISION_LOG.md).
 
 ### Operating Guardrails
+- **Repository Language**: All repository documentation, user-facing design text, code comments, and docstrings must be written in English. Do not add Vietnamese text to repository files.
 - **No Early Implementation**: Empty `src/` directories are framework-neutral placeholders. Do not begin production implementation until Technology Selection PoCs have produced evidence and ADRs are accepted.
 - **Architectural Tenets**:
   - Offline-first after initial load (optional PWA).
