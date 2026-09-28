@@ -70,7 +70,7 @@ Out of scope:
 - [x] Dedicated PoC branch created: `tech-selection-poc`.
 - [x] Research and record candidate technology matrix.
 - [x] Define and execute PoC-1; record evidence and verdict.
-- [ ] Define and execute PoC-3; record evidence and verdict.
+- [ ] Define and execute PoC-3; browser harness prepared, real-browser durability proof still pending.
 - [ ] Define and execute PoC-6; record evidence and verdict.
 - [ ] Define and execute PoC-2; record evidence and verdict.
 - [ ] Define and execute PoC-4; record evidence and verdict.
@@ -79,6 +79,10 @@ Out of scope:
 - [ ] Produce final technology selection summary and move the plan to completed.
 
 ## Decisions
+
+- 2026-09-29: All repository documentation, design text, code comments, and docstrings are English-only; this is also encoded in `AGENTS.md`.
+- 2026-09-29: A provisional browser PoC harness was added under `prototypes/technology-selection/browser-harness/`. It is explicitly non-production and pins current research candidates for reproducible PoC work.
+- 2026-09-29: The current agent container cannot install npm dependencies from the public registry, and its bundled Chromium cannot provide a usable local origin for IndexedDB validation. Browser-dependent PoCs must remain unverified until executed in a normal development environment or another compatible browser runner.
 
 - 2026-09-29: Technology selection is evidence-first. Familiarity alone is not authority for framework or library selection.
 - 2026-09-29: PoC artifacts remain isolated from production paths until an explicit decision promotes a validated approach.
