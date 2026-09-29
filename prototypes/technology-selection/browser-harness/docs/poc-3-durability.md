@@ -2,7 +2,7 @@
 
 ## Status
 
-Prepared for real-browser execution. **Not yet verified.**
+Real-browser behavior has passed the initial Playwright acceptance run. TypeScript harness validation exposed one entry-point module-scope defect, which has been fixed and now requires a clean re-run.
 
 The current agent execution environment cannot install the provisional npm dependencies from the public registry, and its bundled Chromium does not expose a usable local origin for IndexedDB validation. That environment limitation is not evidence for or against IndexedDB or Dexie.
 
@@ -74,6 +74,33 @@ PoC-3 passes only if a real browser proves all of the following:
 - after a page reload, a running Attempt becomes `interrupted`, lifecycle returns to `build`, and previously committed Blueprint progression survives;
 - an intentionally failed version upgrade leaves the legacy v1 record readable;
 - a pre-upgrade recovery snapshot remains available.
+
+## Observed evidence — 2026-09-29
+
+A user-run Playwright execution reported:
+
+```text
+Running 3 tests using 1 worker
+3 passed (3.3s)
+```
+
+The three passing browser tests covered:
+- Blueprint collection atomicity plus idempotent OperationId retry;
+- reload recovery to Build while preserving committed loot;
+- failed schema migration retaining readable legacy state plus a recovery snapshot.
+
+The same user-run validation found a TypeScript entry-point issue before the PoC could be called fully green:
+
+```text
+src/main.ts: Cannot redeclare block-scoped variable 'status'
+Top-level await is only allowed when the file is a module
+```
+
+Root cause: `src/main.ts` had no static import or export, so TypeScript treated it as a script. Its top-level `status` declaration collided with the DOM global `window.status`, and top-level `await` was therefore rejected.
+
+Fix: the entry point is now explicitly an ES module with `export {}`, and the local binding was renamed to `statusElement` for clarity.
+
+A clean `npm run typecheck` re-run is still required before PoC-3 is considered fully verified.
 
 ## Evidence to record after execution
 
