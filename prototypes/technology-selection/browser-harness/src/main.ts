@@ -42,6 +42,15 @@ if (poc === '2') {
   });
 
   statusElement.textContent = 'PoC-4 offline content harness ready.';
+} else if (poc === '5') {
+  const { createPoc5SessionLock } = await import('./poc5/session-lock');
+  const api = createPoc5SessionLock();
+
+  Object.assign(window, {
+    crossDefensePoc5: api,
+  });
+
+  statusElement.textContent = 'PoC-5 Workspace Session Lock ready.';
 } else if (poc === '6') {
   const [{ createBrowserScenarioDriver }, { runSharedDurabilityScenario }] =
     await Promise.all([
