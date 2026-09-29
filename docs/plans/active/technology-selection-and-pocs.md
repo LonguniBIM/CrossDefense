@@ -73,12 +73,15 @@ Out of scope:
 - [x] Define and execute PoC-3; typecheck and all three real-browser durability scenarios pass.
 - [x] Define and execute PoC-6; shared scenario passed through Vitest headless and Playwright real-browser persistence with the same deterministic digest.
 - [x] Define and execute PoC-2; DOM drag/drop and full Build recomputation passed objective browser criteria.
-- [ ] Define and execute PoC-4; record evidence and verdict.
+- [x] Define and execute PoC-4; production build, offline reload, versioned Content Packs, Last Known Good rejection, and pronunciation audio all passed.
 - [ ] Define and execute PoC-5; record evidence and verdict.
 - [ ] Create or update technology ADRs from evidence.
 - [ ] Produce final technology selection summary and move the plan to completed.
 
 ## Decisions
+
+- 2026-09-29: PoC-4 is closed green. A Vite production build using vite-plugin-pwa `injectManifest` and Workbox precaching passed real-browser offline acceptance: valid v1/v2 Content Packs remained available offline, an invalid candidate did not replace Last Known Good, pronunciation WAV data remained available offline, and the application route reloaded offline successfully.
+- 2026-09-29: Keep Vite + vite-plugin-pwa + Workbox as the leading offline delivery stack, with Zod/application-owned Content Pack validation and activation state. Service-worker caches remain replaceable runtime material and never own authoritative Player Data.
 
 - 2026-09-29: PoC-2 is closed green for its objective technology criteria. A semantic DOM Build grid passed real Playwright drag/drop behavior, preserved preview-versus-committed state, and completed 5,000 full recomputations with p95 0.10 ms and max 0.50 ms on the current browser environment.
 - 2026-09-29: Keep the Build Phase DOM-first and use full deterministic recomputation initially. Do not add Canvas/WebGL or incremental Build-stat recalculation without later profiling evidence. This decision does not select the Combat renderer.
