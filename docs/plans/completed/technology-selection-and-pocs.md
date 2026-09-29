@@ -4,7 +4,7 @@ Date: 2026-09-29
 
 ## Status
 
-Active
+Completed
 
 ## Outcome
 
@@ -74,9 +74,9 @@ Out of scope:
 - [x] Define and execute PoC-6; shared scenario passed through Vitest headless and Playwright real-browser persistence with the same deterministic digest.
 - [x] Define and execute PoC-2; DOM drag/drop and full Build recomputation passed objective browser criteria.
 - [x] Define and execute PoC-4; production build, offline reload, versioned Content Packs, Last Known Good rejection, and pronunciation audio all passed.
-- [ ] Define and execute PoC-5; record evidence and verdict.
-- [ ] Create or update technology ADRs from evidence.
-- [ ] Produce final technology selection summary and move the plan to completed.
+- [x] Define and execute PoC-5; real-browser exclusive ownership, blocking, abnormal-close recovery, and explicit release passed.
+- [x] Create or update technology ADRs from evidence.
+- [x] Produce final technology selection summary and move the plan to completed.
 
 ## Decisions
 
@@ -94,12 +94,14 @@ Out of scope:
 
 - 2026-09-29: All repository documentation, design text, code comments, and docstrings are English-only; this is also encoded in `AGENTS.md`.
 - 2026-09-29: A provisional browser PoC harness was added under `prototypes/technology-selection/browser-harness/`. It is explicitly non-production and pins current research candidates for reproducible PoC work.
-- 2026-09-29: The current agent container cannot install npm dependencies from the public registry, and its bundled Chromium cannot provide a usable local origin for IndexedDB validation. Browser-dependent PoCs must remain unverified until executed in a normal development environment or another compatible browser runner.
+- 2026-09-29: The earlier container-only browser execution limitation was removed by running the PoCs through Remote Desktop Commander on `DESKTOP-DBD6QJO`.
 
 - 2026-09-29: Technology selection is evidence-first. Familiarity alone is not authority for framework or library selection.
 - 2026-09-29: PoC artifacts remain isolated from production paths until an explicit decision promotes a validated approach.
 - 2026-09-29: PoC-1 passed across 60 FPS, 144 FPS, 30 FPS, jittered frames, and a simulated three-second stall with identical terminal digest `88da6a92`; this supports fixed-step render-independent simulation and isolated seeded RNG streams.
 - 2026-09-29: PoC-1 does not justify a Web Worker. Keep the simulation host-agnostic and defer main-thread versus Worker selection until browser/rendering evidence exists.
+- 2026-09-29: PoC-5 is closed green. Web Locks provided exclusive ownership, blocked a second writer, released ownership after abnormal owner-tab closure, and allowed stale-owner-attributed recovery.
+- 2026-09-29: The combined browser suite exposed a PoC-3 bootstrap race: the API was published before asynchronous bootstrap completed. Publishing the API only after bootstrap removed the race and the full suite passed.
 
 ## Validation
 
@@ -109,4 +111,6 @@ Out of scope:
 
 ## Result
 
-Pending. Record the verified stack decisions, remaining risks, and next phase before moving this plan to `docs/plans/completed/`.
+Technology Selection + targeted PoCs are complete. The selected MVP foundation is TypeScript + Vite, IndexedDB + Dexie, Zod boundary validation, Vitest + Playwright, vite-plugin-pwa + Workbox, Web Locks for Workspace write ownership, and a DOM-first Build Phase with full deterministic recomputation. Final validation passed: typecheck, 1 headless scenario, 7 standard browser tests, and the dedicated production-build/offline PoC-4 test.
+
+The overall UI framework, Combat renderer, dedicated state-management library, production audio abstraction, and detailed content-compiler implementation remain deliberately unresolved because current evidence does not justify a choice. See `docs/architecture/TECHNOLOGY_SELECTION_RESULT.md`. The next phase is UX/UI + Detailed Design.

@@ -1,6 +1,6 @@
-# Vocabulary Ship Game — Pre-Harness Bootstrap
+# Vocabulary Ship Game — CrossDefense
 
-This repository is a **technology-neutral greenfield codebase shell** for the vocabulary ship-building web game discussed and approved through Product Design, Product Platform Design, and Technical Architecture.
+This repository contains the approved product, platform, technical architecture, engineering harness, and evidence-backed technology foundation for the CrossDefense vocabulary ship-building web game.
 
 The final product name is still **TBD**. `vocab-ship-game` is only a working repository slug.
 
@@ -12,36 +12,30 @@ Completed and captured here:
 - Product Platform Design;
 - Technical Architecture;
 - canonical domain terminology;
-- architecture decision records for the hardest-to-reverse choices;
-- implementation/testing seams;
-- Technology Selection + PoC backlog.
+- engineering harness/orchestration;
+- Technology Selection + targeted PoCs;
+- evidence-backed technology ADRs and testing seams.
 
 Not started intentionally:
 
-- framework/library selection;
-- package manager/build tooling;
-- production code;
-- harness/orchestration setup;
-- implementation tickets;
+- production application implementation;
 - final UX/UI detailed design;
+- final implementation tickets;
 - production content authoring.
 
-## Why there is no package.json / framework scaffold yet
+## Why there is still no production root package.json / framework scaffold
 
-Technology Selection has deliberately been deferred until after the engineering harness/orchestration is installed and the highest-risk architecture questions are validated through targeted PoCs. This avoids encoding React/Phaser/Pixi/IndexedDB/etc. into the repository before evidence exists.
+The Technology Selection phase is complete, but the repository deliberately keeps production paths unscaffolded until UX/UI + Detailed Design is settled. The executable package under `prototypes/technology-selection/browser-harness/` is evidence-producing prototype infrastructure, not the production application.
+
+See `docs/architecture/TECHNOLOGY_SELECTION_RESULT.md` for accepted technology selections and deliberate deferrals.
 
 ## Intended next sequence
 
-1. Initialize this directory as the working repository if needed.
-2. Install/configure the user's preferred engineering harness and orchestration.
-3. Preserve the architecture and glossary documents in this package as the source of truth.
-4. Resume with **Technology Selection + targeted PoCs**.
-5. Use PoC evidence to select the runtime/UI/persistence/tooling stack.
-6. Run **UX/UI + Detailed Design** for the settled platform.
-7. Update the implementation specification.
-8. Re-run `to-tickets` against the actual repository and chosen stack.
-
-See `docs/handoff/PRE_HARNESS_HANDOFF.md` for the exact continuation point.
+1. Run **UX/UI + Detailed Design** against the approved product, architecture, and technology foundation.
+2. Resolve the overall UI framework and Combat renderer only when concrete screen/render requirements justify the choice.
+3. Refresh the implementation specification with the settled UX and remaining technology decisions.
+4. Re-run `to-tickets` against the actual repository and chosen stack.
+5. Begin production implementation only from approved tickets.
 
 ## High-level architecture
 

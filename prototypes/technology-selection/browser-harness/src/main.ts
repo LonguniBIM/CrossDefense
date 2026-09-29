@@ -27,11 +27,12 @@ if (poc === '2') {
   const module = await import('./poc3/durability');
   const api = module.createPoc3BrowserApi();
 
+  await api.bootstrap();
+
   Object.assign(window, {
     crossDefensePoc3: api,
   });
 
-  await api.bootstrap();
   statusElement.textContent = 'PoC-3 durability harness ready.';
 } else if (poc === '4') {
   const { createPoc4Api } = await import('./poc4/content-pack');

@@ -34,7 +34,7 @@ and behavior-level proof; do not create parallel control-plane state.
 
 ### Product & Domain Context
 - **Project**: Vocabulary Ship Game (working slug: `CrossDefense`).
-- **Phase**: Pre-Harness Bootstrap complete. Active milestone is **Technology Selection + targeted PoCs** (see [PRE_HARNESS_HANDOFF.md](docs/handoff/PRE_HARNESS_HANDOFF.md)).
+- **Phase**: Technology Selection + targeted PoCs are complete. Active milestone is **UX/UI + Detailed Design**. See [TECHNOLOGY_SELECTION_RESULT.md](docs/architecture/TECHNOLOGY_SELECTION_RESULT.md) for the accepted stack foundation and deliberate deferrals.
 - **Domain Glossary**: [CONTEXT.md](CONTEXT.md) is the canonical product and domain vocabulary.
 - **Product Specification**: [docs/product/MVP_SPEC.md](docs/product/MVP_SPEC.md).
 - **Architecture Overview**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/architecture/PLATFORM_ARCHITECTURE.md](docs/architecture/PLATFORM_ARCHITECTURE.md), and [docs/architecture/TECHNICAL_ARCHITECTURE.md](docs/architecture/TECHNICAL_ARCHITECTURE.md).
@@ -44,7 +44,7 @@ and behavior-level proof; do not create parallel control-plane state.
 
 ### Operating Guardrails
 - **Repository Language**: All repository documentation, user-facing design text, code comments, and docstrings must be written in English. Do not add Vietnamese text to repository files.
-- **No Early Implementation**: Empty `src/` directories are framework-neutral placeholders. Do not begin production implementation until Technology Selection PoCs have produced evidence and ADRs are accepted.
+- **No Early Implementation**: Technology foundation ADRs are accepted, but production implementation remains blocked until UX/UI + Detailed Design is complete, the implementation specification is refreshed, and final implementation tickets are approved.
 - **Architectural Tenets**:
   - Offline-first after initial load (optional PWA).
   - Headless deterministic Domain Core owns state and rules.
