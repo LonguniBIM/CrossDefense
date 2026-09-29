@@ -39,21 +39,11 @@ declare global {
   }
 }
 
-async function waitForServiceWorkerControl(
+async function waitForServiceWorkerReady(
   page: import('@playwright/test').Page,
 ): Promise<void> {
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
-
-    if (!navigator.serviceWorker.controller) {
-      await new Promise<void>((resolve) => {
-        navigator.serviceWorker.addEventListener(
-          'controllerchange',
-          () => resolve(),
-          { once: true },
-        );
-      });
-    }
   });
 }
 
@@ -63,12 +53,12 @@ test('validated Content Packs and pronunciation audio remain usable offline', as
 }) => {
   await page.goto('/?poc=4');
   await page.waitForFunction(() => Boolean(window.crossDefensePoc4));
-  await waitForServiceWorkerControl(page);
+  await waitForServiceWorkerReady(page);
 
   if (!await page.evaluate(() => Boolean(navigator.serviceWorker.controller))) {
     await page.reload();
     await page.waitForFunction(() => Boolean(window.crossDefensePoc4));
-    await waitForServiceWorkerControl(page);
+    await waitForServiceWorkerReady(page);
   }
 
   await page.evaluate(() => {
