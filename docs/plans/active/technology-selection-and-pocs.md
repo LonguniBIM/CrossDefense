@@ -71,7 +71,7 @@ Out of scope:
 - [x] Research and record candidate technology matrix.
 - [x] Define and execute PoC-1; record evidence and verdict.
 - [x] Define and execute PoC-3; typecheck and all three real-browser durability scenarios pass.
-- [ ] Define and execute PoC-6; record evidence and verdict.
+- [x] Define and execute PoC-6; shared scenario passed through Vitest headless and Playwright real-browser persistence with the same deterministic digest.
 - [ ] Define and execute PoC-2; record evidence and verdict.
 - [ ] Define and execute PoC-4; record evidence and verdict.
 - [ ] Define and execute PoC-5; record evidence and verdict.
@@ -79,6 +79,10 @@ Out of scope:
 - [ ] Produce final technology selection summary and move the plan to completed.
 
 ## Decisions
+
+- 2026-09-29: PoC-6 is closed green. One shared adapter-driven scenario passed through Vitest headless execution (172 ms) and Playwright real-browser execution (4.1 s) with the same deterministic digest `68523b19`. Playwright also ran the scenario with the browser context offline after initial load and attached a JSON diagnostic artifact.
+- 2026-09-29: Select Vitest as the leading headless Domain/Application test runner and Playwright as the leading real-browser acceptance tool. A separate Vitest Browser Mode layer is not justified by current evidence and should remain out of the production stack unless a later concrete need appears.
+- 2026-09-29: Remote Desktop Commander on `DESKTOP-DBD6QJO` now provides a normal Windows development environment for browser-dependent PoCs, removing the earlier execution-environment blocker.
 
 - 2026-09-29: PoC-3 is closed green on Windows 11 Home with Node.js v24.13.1, npm 11.8.0, Playwright 1.63.0, and Chromium 153.0.8010.12. `npm run typecheck` passed and all three Playwright durability scenarios passed in 4.4 seconds. IndexedDB is validated as the browser durability primitive for the tested contracts; Dexie remains the leading wrapper candidate.
 
