@@ -1,12 +1,16 @@
 # Technology Selection + PoC Backlog
 
+## Status
+
+Completed on 2026-09-29. See `TECHNOLOGY_SELECTION_RESULT.md` and ADRs 0006–0011 for the accepted evidence-backed selections and deliberate deferrals.
+
 ## Purpose
 
 This is the **next phase after harness/orchestration setup**. Do not select a framework only because it is familiar; use the architecture contract and targeted PoCs to answer high-risk questions first.
 
-## Technology decisions to make
+## Original technology decision frontier
 
-The repository intentionally does not yet choose:
+This phase evaluated:
 
 - primary application language/toolchain;
 - UI framework;
@@ -20,6 +24,8 @@ The repository intentionally does not yet choose:
 - test runner and browser automation tooling;
 - content authoring/compile pipeline tooling;
 - whether simulation runs on main thread or Web Worker.
+
+Accepted selections and deliberate deferrals are recorded in `TECHNOLOGY_SELECTION_RESULT.md`.
 
 ## Selection criteria
 

@@ -18,13 +18,24 @@ This is a compact index of settled decision ranges from the design interview. De
 - Q195–Q210: separate player-data/content durability domains, cross-aggregate Unit of Work, idempotent durable operations, Attempt Envelope, durable payload commit semantics, root save schema + staged migrations, state-only backups, staged restore, corruption isolation, immutable deterministic Content Packs, reference-aware pack cleanup, separate Simulation/Wall clocks, infrastructure session lock, two-tier persistence tests.
 - Q211–Q227: bounded simulation catch-up, no background catch-up, tick-boundary input ordering, read-only render projections, host-agnostic simulation, durability barriers, runtime health states, bootstrap state machine, coherent App Version per session, performance targets, preview vs committed build, audio isolation, reproducible Diagnostic Bundle, no anti-cheat requirement, bounded debug retention, immutable typed RuntimeRules, defense-in-depth validation.
 
+## Technology Selection
+
+- TypeScript + Vite selected for the application toolchain.
+- IndexedDB + Dexie selected for authoritative browser-local persistence.
+- Zod selected for runtime boundary validation.
+- Vitest + Playwright selected for headless and real-browser testing.
+- vite-plugin-pwa + Workbox selected for offline runtime delivery.
+- Web Locks selected for Workspace write ownership.
+- Build Phase selected as DOM-first with full deterministic recomputation.
+- Simulation remains host-agnostic and starts on the main thread unless profiling later justifies a Worker.
+
 ## Deferred decision sets
 
-- exact framework/tool/library selections;
-- main thread vs Web Worker final choice;
-- persistence library/wrapper;
-- rendering engine;
-- PWA/service-worker implementation;
+- overall UI framework;
+- Combat renderer / 2D engine;
+- dedicated state-management library;
+- production audio abstraction/library;
+- detailed content-authoring/compiler implementation;
 - final UX/UI detailed design;
 - final product name and art direction;
 - balance tuning values listed as configuration hypotheses.

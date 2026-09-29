@@ -1,0 +1,10 @@
+{
+  "contentVersion": "poc4-v2",
+  "schemaVersion": 1,
+  "compatibleRuleset": "poc-rules-v1",
+  "minimumAppVersion": "0.0.0",
+  "audio": {
+    "laser": "/content/audio/laser.wav"
+  },
+  "words": ["LASER", "ARMOR"]
+}
