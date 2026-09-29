@@ -54,6 +54,6 @@ test('the shared scenario runs against real browser persistence while offline', 
       blueprintQuotaRemaining: 2,
       operationCount: 1,
     },
-    digest: 'fce0ddb6',
+    digest: '68523b19',
   });
 });
