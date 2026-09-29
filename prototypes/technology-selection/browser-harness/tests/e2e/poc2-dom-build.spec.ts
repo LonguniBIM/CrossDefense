@@ -84,6 +84,8 @@ test('full Build recomputation stays comfortably below one frame budget', async 
     return window.crossDefensePoc2!.benchmark(5000);
   });
 
+  console.log('PoC-2 benchmark', benchmark);
+
   test.info().annotations.push({
     type: 'benchmark',
     description: JSON.stringify(benchmark),
