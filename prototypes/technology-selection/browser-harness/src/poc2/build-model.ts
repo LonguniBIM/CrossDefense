@@ -44,8 +44,8 @@ export function createInitialPlacements(): TilePlacement[] {
     { id: 'tile-s', letter: 'S', subtype: 'Laser', x: 2, y: 2 },
     { id: 'tile-e', letter: 'E', subtype: 'Laser', x: 3, y: 2 },
     { id: 'tile-r1', letter: 'R', subtype: 'Laser', x: 4, y: 2 },
-    { id: 'tile-m', letter: 'M', subtype: 'Armor', x: 1, y: 3 },
-    { id: 'tile-r2', letter: 'R', subtype: 'Armor', x: 1, y: 4 },
+    { id: 'tile-r2', letter: 'R', subtype: 'Armor', x: 1, y: 3 },
+    { id: 'tile-m', letter: 'M', subtype: 'Armor', x: 1, y: 4 },
     { id: 'tile-o', letter: 'O', subtype: 'Armor', x: 1, y: 5 },
     { id: 'tile-r3', letter: 'R', subtype: 'Armor', x: 1, y: 6 },
   ];
