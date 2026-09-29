@@ -33,6 +33,15 @@ if (poc === '2') {
 
   await api.bootstrap();
   statusElement.textContent = 'PoC-3 durability harness ready.';
+} else if (poc === '4') {
+  const { createPoc4Api } = await import('./poc4/content-pack');
+  const api = createPoc4Api();
+
+  Object.assign(window, {
+    crossDefensePoc4: api,
+  });
+
+  statusElement.textContent = 'PoC-4 offline content harness ready.';
 } else if (poc === '6') {
   const [{ createBrowserScenarioDriver }, { runSharedDurabilityScenario }] =
     await Promise.all([
