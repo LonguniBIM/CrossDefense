@@ -70,6 +70,9 @@ export function mountPoc2(root: HTMLElement): Poc2Api {
     throw new Error('PoC-2 DOM host is incomplete.');
   }
 
+  const gridElement = grid;
+  const statsElement = stats;
+
   for (let y = 0; y < GRID_SIZE; y += 1) {
     for (let x = 0; x < GRID_SIZE; x += 1) {
       const cell = createCell(x, y);
@@ -98,7 +101,7 @@ export function mountPoc2(root: HTMLElement): Poc2Api {
         render();
       });
 
-      grid.append(cell);
+      gridElement.append(cell);
     }
   }
 
@@ -106,7 +109,7 @@ export function mountPoc2(root: HTMLElement): Poc2Api {
     const active = preview ?? committed;
     const evaluation = evaluateBuild(active);
 
-    for (const cell of grid.querySelectorAll<HTMLDivElement>('.poc2-cell')) {
+    for (const cell of gridElement.querySelectorAll<HTMLDivElement>('.poc2-cell')) {
       cell.replaceChildren();
       cell.classList.remove('preview-target');
     }
@@ -114,7 +117,7 @@ export function mountPoc2(root: HTMLElement): Poc2Api {
     for (const placement of active) {
       const selector =
         `.poc2-cell[data-x="${placement.x}"][data-y="${placement.y}"]`;
-      const cell = grid.querySelector<HTMLDivElement>(selector);
+      const cell = gridElement.querySelector<HTMLDivElement>(selector);
 
       if (!cell) {
         continue;
@@ -144,7 +147,7 @@ export function mountPoc2(root: HTMLElement): Poc2Api {
       cell.append(tile);
     }
 
-    stats.innerHTML = `
+    statsElement.innerHTML = `
       <p>Words: <span class="poc2-word">${evaluation.activeWords.join(', ') || 'None'}</span></p>
       <p>Power available: ${evaluation.powerAvailable}</p>
       <p>Offense: ${evaluation.offense}</p>
