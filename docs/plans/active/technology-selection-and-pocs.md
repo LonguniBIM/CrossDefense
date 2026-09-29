@@ -72,13 +72,16 @@ Out of scope:
 - [x] Define and execute PoC-1; record evidence and verdict.
 - [x] Define and execute PoC-3; typecheck and all three real-browser durability scenarios pass.
 - [x] Define and execute PoC-6; shared scenario passed through Vitest headless and Playwright real-browser persistence with the same deterministic digest.
-- [ ] Define and execute PoC-2; record evidence and verdict.
+- [x] Define and execute PoC-2; DOM drag/drop and full Build recomputation passed objective browser criteria.
 - [ ] Define and execute PoC-4; record evidence and verdict.
 - [ ] Define and execute PoC-5; record evidence and verdict.
 - [ ] Create or update technology ADRs from evidence.
 - [ ] Produce final technology selection summary and move the plan to completed.
 
 ## Decisions
+
+- 2026-09-29: PoC-2 is closed green for its objective technology criteria. A semantic DOM Build grid passed real Playwright drag/drop behavior, preserved preview-versus-committed state, and completed 5,000 full recomputations with p95 0.10 ms and max 0.50 ms on the current browser environment.
+- 2026-09-29: Keep the Build Phase DOM-first and use full deterministic recomputation initially. Do not add Canvas/WebGL or incremental Build-stat recalculation without later profiling evidence. This decision does not select the Combat renderer.
 
 - 2026-09-29: PoC-6 is closed green. One shared adapter-driven scenario passed through Vitest headless execution (172 ms) and Playwright real-browser execution (4.1 s) with the same deterministic digest `68523b19`. Playwright also ran the scenario with the browser context offline after initial load and attached a JSON diagnostic artifact.
 - 2026-09-29: Select Vitest as the leading headless Domain/Application test runner and Playwright as the leading real-browser acceptance tool. A separate Vitest Browser Mode layer is not justified by current evidence and should remain out of the production stack unless a later concrete need appears.
