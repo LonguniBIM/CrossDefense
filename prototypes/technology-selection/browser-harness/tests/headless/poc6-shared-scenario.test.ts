@@ -68,7 +68,7 @@ describe('PoC-6 shared scenario', () => {
         blueprintQuotaRemaining: 2,
         operationCount: 1,
       },
-      digest: 'fce0ddb6',
+      digest: '68523b19',
     });
   });
 });
