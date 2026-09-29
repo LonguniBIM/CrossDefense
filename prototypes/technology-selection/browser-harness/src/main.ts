@@ -1,6 +1,8 @@
-const status = document.querySelector<HTMLParagraphElement>('#status');
+export {};
 
-if (!status) {
+const statusElement = document.querySelector<HTMLParagraphElement>('#status');
+
+if (!statusElement) {
   throw new Error('PoC harness status element is missing.');
 }
 
@@ -15,7 +17,7 @@ if (params.get('poc') === '3') {
   });
 
   await api.bootstrap();
-  status.textContent = 'PoC-3 durability harness ready.';
+  statusElement.textContent = 'PoC-3 durability harness ready.';
 } else {
-  status.textContent = 'Browser PoC harness loaded.';
+  statusElement.textContent = 'Browser PoC harness loaded.';
 }
