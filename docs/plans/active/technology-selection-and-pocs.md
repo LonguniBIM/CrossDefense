@@ -70,7 +70,7 @@ Out of scope:
 - [x] Dedicated PoC branch created: `tech-selection-poc`.
 - [x] Research and record candidate technology matrix.
 - [x] Define and execute PoC-1; record evidence and verdict.
-- [ ] Define and execute PoC-3; browser harness prepared, real-browser durability proof still pending.
+- [ ] Define and execute PoC-3; Playwright browser behavior passed (3 tests), TypeScript validation fix applied, clean typecheck re-run pending.
 - [ ] Define and execute PoC-6; record evidence and verdict.
 - [ ] Define and execute PoC-2; record evidence and verdict.
 - [ ] Define and execute PoC-4; record evidence and verdict.
@@ -79,6 +79,8 @@ Out of scope:
 - [ ] Produce final technology selection summary and move the plan to completed.
 
 ## Decisions
+
+- 2026-09-29: PoC-3 Playwright browser acceptance passed all three prepared durability scenarios in the user's development environment. This is positive evidence for IndexedDB + Dexie transaction, idempotency, reload recovery, and migration-recovery behavior, but the PoC remains open until TypeScript validation is green after the harness entry-point fix.
 
 - 2026-09-29: All repository documentation, design text, code comments, and docstrings are English-only; this is also encoded in `AGENTS.md`.
 - 2026-09-29: A provisional browser PoC harness was added under `prototypes/technology-selection/browser-harness/`. It is explicitly non-production and pins current research candidates for reproducible PoC work.
