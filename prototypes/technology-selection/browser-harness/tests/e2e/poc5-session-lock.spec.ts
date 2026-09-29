@@ -62,11 +62,11 @@ test('one tab owns writes, a second is blocked, and abnormal closure recovers', 
   const lockQuery = await tabB.evaluate(async () => {
     const snapshot = await navigator.locks.query();
     return {
-      held: snapshot.held.map((lock) => ({
+      held: (snapshot.held ?? []).map((lock) => ({
         name: lock.name,
         mode: lock.mode,
       })),
-      pending: snapshot.pending.length,
+      pending: snapshot.pending?.length ?? 0,
     };
   });
 
