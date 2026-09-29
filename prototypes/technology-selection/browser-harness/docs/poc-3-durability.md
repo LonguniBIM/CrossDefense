@@ -2,7 +2,7 @@
 
 ## Status
 
-Real-browser behavior has passed the initial Playwright acceptance run. TypeScript harness validation exposed one entry-point module-scope defect, which has been fixed and now requires a clean re-run.
+Verified green in the user's Windows development environment. TypeScript validation and all three Playwright durability scenarios pass after the entry-point module-scope fix.
 
 The current agent execution environment cannot install the provisional npm dependencies from the public registry, and its bundled Chromium does not expose a usable local origin for IndexedDB validation. That environment limitation is not evidence for or against IndexedDB or Dexie.
 
@@ -100,7 +100,29 @@ Root cause: `src/main.ts` had no static import or export, so TypeScript treated 
 
 Fix: the entry point is now explicitly an ES module with `export {}`, and the local binding was renamed to `statusElement` for clarity.
 
-A clean `npm run typecheck` re-run is still required before PoC-3 is considered fully verified.
+A clean re-run was completed through Desktop Commander on 2026-09-29.
+
+Environment:
+- Windows 11 Home
+- Node.js v24.13.1
+- npm 11.8.0
+- Playwright 1.63.0
+- Chromium 153.0.8010.12
+
+Observed commands and results:
+
+```text
+npm run typecheck
+> tsc --noEmit
+PASS (exit code 0)
+
+npm run test:e2e -- poc3-durability.spec.ts
+Running 3 tests using 1 worker
+3 passed (4.4s)
+PASS (exit code 0)
+```
+
+PoC-3 is therefore complete for its stated scope.
 
 ## Evidence to record after execution
 
@@ -116,7 +138,7 @@ Record:
 
 ## Decision rule
 
-A passing PoC supports promoting IndexedDB as the browser durability primitive and Dexie as a strong production wrapper candidate.
+This passing PoC supports IndexedDB as the browser durability primitive and keeps Dexie as the leading production wrapper candidate. Final production selection remains subject to the overall Technology Selection closeout and ADR review.
 
 A failure must be classified before changing the architecture:
 
