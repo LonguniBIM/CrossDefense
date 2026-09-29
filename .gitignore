@@ -22,3 +22,7 @@ Thumbs.db
 # Harness core maintenance binary
 scripts/bin/harness
 scripts/bin/harness.exe
+
+node_modules/
+test-results/
+playwright-report/
