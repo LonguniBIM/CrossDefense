@@ -37,7 +37,7 @@ test('the shared scenario runs against real browser persistence while offline', 
   await context.setOffline(false);
 
   await testInfo.attach('crossdefense-diagnostic.json', {
-    body: Buffer.from(JSON.stringify(diagnostic, null, 2)),
+    body: JSON.stringify(diagnostic, null, 2),
     contentType: 'application/json',
   });
 
