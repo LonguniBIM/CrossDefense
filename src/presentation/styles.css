@@ -1,0 +1,64 @@
+:root {
+  font-family: Inter, system-ui, sans-serif;
+  color: #e7f0ff;
+  background: #0b1220;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #0b1220; }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+.shell {
+  width: min(880px, calc(100% - 32px));
+  margin: 48px auto;
+}
+.panel {
+  background: #121e30;
+  border: 1px solid #2b4668;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 18px 50px rgb(0 0 0 / 28%);
+}
+h1, h2 { margin-top: 0; }
+.muted { color: #9fb4cf; }
+.status { min-height: 24px; margin: 12px 0; color: #c9d8eb; }
+.form-grid { display: grid; gap: 12px; margin-top: 20px; }
+label { display: grid; gap: 6px; }
+input, select {
+  width: 100%;
+  color: #e7f0ff;
+  background: #0d1726;
+  border: 1px solid #35557e;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.primary, .secondary {
+  border-radius: 8px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+}
+.primary { background: #4f8cff; color: white; }
+.secondary { background: transparent; color: #d7e5f7; border-color: #48658a; }
+.primary:disabled { opacity: .55; cursor: default; }
+.pilot-list { display: grid; gap: 12px; margin-top: 20px; }
+.pilot-card {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid #294463;
+  border-radius: 12px;
+  padding: 12px;
+  background: #0f1a2a;
+}
+.avatar {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #203e64;
+  font-weight: 700;
+}
+.error { color: #ffb4b4; }
+.identity { word-break: break-all; font-family: ui-monospace, monospace; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
