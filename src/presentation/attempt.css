@@ -1,0 +1,19 @@
+.at-panel { width: min(900px, 100%); margin: 0 auto; }
+.at-eyebrow { color: #70e5d8; font-size: 11px; letter-spacing: .12em; }
+.at-panel .facts dd { overflow-wrap: anywhere; }
+.at-panel .form-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+.at-panel [data-testid="attempt-layout"] { line-height: 1.7; }
+.at-dialog { max-width: 540px; color: #e7f0ff; background: #121e30; border: 1px solid #49688b; border-radius: 12px; padding: 24px; }
+.at-dialog::backdrop { background: rgba(0, 0, 0, .65); }
+.at-dialog button { margin: 8px 8px 0 0; }
+.at-panel button:focus-visible, .at-panel select:focus-visible, .at-dialog button:focus-visible { outline: 3px solid #9ed6ff; outline-offset: 3px; }
+@media(max-width: 700px) { .at-panel .form-grid { grid-template-columns: 1fr; } }
+
+/* Scoped diagnostic layout; do not inherit collapsing Pilot-chooser margins. */
+.shell.at-shell { margin: 0 auto; padding: 16px 0; }
+.at-panel h1 { font-size: 28px; margin: 4px 0 16px; }
+.at-panel p { font-size: 14px; line-height: 1.45; margin: 12px 0; }
+.at-panel .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; }
+.at-panel .facts dt { font-size: 11px; color: #9fb4cf; }
+.at-panel .facts dd { margin: 3px 0 0; font-size: 13px; }
+@media(max-width: 700px) { .at-panel .facts { grid-template-columns: 1fr; } }

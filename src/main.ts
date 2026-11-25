@@ -1,8 +1,44 @@
+import { ResultsApplication } from './application/results/ResultsApplication';
+import { ReviewApplication } from './application/review/ReviewApplication';
+import { mountReview } from './presentation/ReviewView';
+import { SalvageApplication } from './application/results/SalvageApplication';
+import { mountResults } from './presentation/ResultsView';
+import { mountSalvage } from './presentation/SalvageView';
+import { retainedTiles } from './domain/run/cargo';
+import { RENDERED_CONTENT_VERSION, REVIEW_CONTENT_VERSION, hasRenderAssets } from './domain/content/renderAssets';
+import { CombatApplication } from './application/combat/CombatApplication';
+import { mountCombat } from './presentation/CombatView';
+import { COMBAT_RULESET_VERSION } from './domain/combat/rules';
+import { AttemptApplication } from './application/attempt/AttemptApplication';
+import { mountMapSelection, mountAttemptDiagnostic } from './presentation/AttemptView';
+import { ATTEMPT_RULESET_VERSION } from './domain/attempt/rules';
+import type { ActiveRun } from './domain/run/run';
+import { BuildApplication } from './application/build/BuildApplication';
+import { mountBuild } from './presentation/BuildView';
+import { PreRunApplication } from './application/preRun/PreRunApplication';
+import { mountPreRun } from './presentation/PreRunView';
+import { collectedTiles } from './domain/preRun/salvage';
+import { ContentStorageError } from './application/content/ContentPackRepository';
 import './presentation/styles.css';
-import { STOCK_AVATARS, type StockAvatarId } from './domain/workspace/pilot';
+import { STOCK_AVATARS, type PilotProfile, type StockAvatarId } from './domain/workspace/pilot';
 import { WorkspaceApplication, type PilotChooserProjection } from './application/workspace/WorkspaceApplication';
+import { ContentPackApplication } from './application/content/ContentPackApplication';
+import { RunApplication, type RunProjection, type StartRunRequest } from './application/run/RunApplication';
+import { APP_VERSION, DEVELOPMENT_RULESET_VERSION } from './application/version';
+import { BUILD_RULESET_VERSION } from './domain/build/rules';
 import { DexieWorkspaceRepository } from './infrastructure/persistence/DexieWorkspaceRepository';
+import { LocalStorageContentPackRepository } from './infrastructure/content/LocalStorageContentPackRepository';
 import { WorkspaceWriteLock } from './infrastructure/workspace/WorkspaceWriteLock';
+
+const DEVELOPMENT_PACK_URL = '/content/packs/development-review-ship-v1/manifest.json';
+const PINNED_PACK_URLS = new Map([
+  ['development-starter-ship-v1', '/content/packs/development/manifest.json'],
+  ['development-build-ship-v1', '/content/packs/development-build-ship-v1/manifest.json'],
+  ['development-attempt-ship-v1', '/content/packs/development-attempt-ship-v1/manifest.json'],
+  ['development-combat-ship-v1', '/content/packs/development-combat-ship-v1/manifest.json'],
+  [RENDERED_CONTENT_VERSION, '/content/packs/development-rendered-combat-ship-v1/manifest.json'],
+  [REVIEW_CONTENT_VERSION, DEVELOPMENT_PACK_URL],
+]);
 
 const appRoot = document.querySelector<HTMLElement>('#app');
 if (!appRoot) {
@@ -13,19 +49,38 @@ const root: HTMLElement = appRoot;
 const lock = new WorkspaceWriteLock(crypto.randomUUID());
 let ownsWorkspace = false;
 let application: WorkspaceApplication | null = null;
+let contentApplication: ContentPackApplication | null = null;
+let runApplication: RunApplication | null = null;
+let workspaceRepository: DexieWorkspaceRepository | null = null;
+let stopPreRun: (() => void) | null = null;
+let stopBuild: (() => void) | null = null;
+let stopAttempt: (() => void) | null = null;
+let stopResults: (() => void) | null = null;
+let stopReview: (() => void) | null = null;
+let screenEpoch = 0;
+let contentCandidateMessage: string | null = null;
+const pendingStartRequests = new Map<string, StartRunRequest>();
 
 function page(content: string): void {
+  stopReview?.(); stopReview = null;
+  stopResults?.(); stopResults=null;
+  stopAttempt?.(); stopAttempt=null;
+  stopBuild?.();
+  stopBuild = null;
+  stopPreRun?.();
+  stopPreRun = null;
+  screenEpoch += 1;
   root.innerHTML = `<div class="shell"><section class="panel">${content}</section></div>`;
 }
 
 function renderLoading(message: string): void {
-  page(`<h1>CrossDefense</h1><p class="muted" data-testid="loading">${message}</p>`);
+  page(`<h1>CrossDefense</h1><p class="muted" data-testid="loading">${escapeHtml(message)}</p>`);
 }
 
 function renderRecovery(message: string): void {
   page(`
     <h1>Workspace recovery</h1>
-    <p class="error" data-testid="recovery-message">${message}</p>
+    <p class="error" data-testid="recovery-message">${escapeHtml(message)}</p>
     <p class="muted">Your existing local data has not been replaced with a new Workspace.</p>
     <div class="actions"><button class="primary" data-testid="retry-storage">Retry storage</button></div>
   `);
@@ -38,7 +93,7 @@ function renderOwnershipBlocked(ownerId: string | null): void {
   page(`
     <h1>Workspace is active in another tab</h1>
     <p data-testid="ownership-blocked">Only one browser tab can write to this local Workspace at a time.</p>
-    <p class="muted">${ownerId ? `Current owner: ${ownerId}` : 'Close the active tab, then retry.'}</p>
+    <p class="muted">${ownerId ? `Current owner: ${escapeHtml(ownerId)}` : 'Close the active tab, then retry.'}</p>
     <div class="actions"><button class="primary" data-testid="retry-ownership">Retry ownership</button></div>
   `);
   root.querySelector<HTMLButtonElement>('[data-testid="retry-ownership"]')?.addEventListener('click', () => {
@@ -116,7 +171,7 @@ function renderChooser(projection: PilotChooserProjection): void {
       try {
         const next = await application.continuePilot(pilotId);
         if (!next.activePilot) throw new Error('No active Pilot was selected.');
-        renderReady(next.activePilot.pilotId, next.activePilot.nickname, next.activePilot.avatarId);
+        await renderPilotRun(next.activePilot);
       } catch (error) {
         renderRecovery(error instanceof Error ? error.message : String(error));
       }
@@ -124,17 +179,359 @@ function renderChooser(projection: PilotChooserProjection): void {
   });
 }
 
-function renderReady(pilotId: string, nickname: string, avatarId: StockAvatarId): void {
+async function renderPilotRun(pilot: PilotProfile): Promise<void> {
+  if (!runApplication || !contentApplication) {
+    renderContentUnavailable(pilot, 'Content runtime is unavailable.');
+    return;
+  }
+
+  try {
+    const projection = await runApplication.getRunProjection(pilot.pilotId);
+    if (projection.kind === 'no-run') {
+      const pack = await contentApplication.getActivePack();
+      if (!pack) {
+        renderContentUnavailable(
+          pilot,
+          contentCandidateMessage ?? 'No validated development Content Pack is active.',
+        );
+        return;
+      }
+      renderNewRun(pilot, pack.contentVersion, pack.compatibleRuleset, pack.preRun.collectionQuota, pack.preRun.starterObjective.targetWord);
+      return;
+    }
+
+    renderRunProjection(pilot, projection);
+  } catch (error) {
+    renderRecovery(error instanceof Error ? error.message : String(error));
+  }
+}
+
+function renderNewRun(
+  pilot: PilotProfile,
+  contentVersion: string,
+  rulesetVersion: string,
+  quota: number,
+  targetWord: string,
+): void {
   page(`
-    <h1>Pilot ready</h1>
-    <p data-testid="active-pilot"><strong>${escapeHtml(nickname)}</strong> is ready to continue.</p>
-    <p class="muted">Avatar: ${avatarId}</p>
-    <p class="identity" data-testid="active-pilot-id">${pilotId}</p>
-    <div class="actions"><button class="secondary" data-testid="back-to-pilots">Back to Pilots</button></div>
+    <h1>New Run</h1>
+    <p><strong>${escapeHtml(pilot.nickname)}</strong> can start a Run using the validated development Content Pack.</p>
+    <p class="identity" data-testid="active-pilot-id">${escapeHtml(pilot.pilotId)}</p>
+    ${contentCandidateMessage ? `<p class="muted" data-testid="content-candidate-warning">${escapeHtml(contentCandidateMessage)}</p>` : ''}
+    <dl class="facts">
+      <div><dt>Content</dt><dd data-testid="start-content-version">${escapeHtml(contentVersion)}</dd></div>
+      <div><dt>Ruleset</dt><dd data-testid="start-ruleset-version">${escapeHtml(rulesetVersion)}</dd></div>
+      <div><dt>Collection quota</dt><dd data-testid="start-quota">${quota}</dd></div>
+      <div><dt>Starter objective</dt><dd data-testid="start-objective">${escapeHtml(targetWord)} with a Weapon Tile</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="primary" data-testid="start-run">Start Run</button>
+      <button class="secondary" data-testid="back-to-pilots">Back to Pilots</button>
+    </div>
+    <div class="status" data-testid="run-command-status"></div>
   `);
+
+  const request = pendingStartRequests.get(pilot.pilotId) ?? { operationId: crypto.randomUUID(), pilotId: pilot.pilotId };
+  let pending = false;
+  root.querySelector<HTMLButtonElement>('[data-testid="start-run"]')?.addEventListener('click', async () => {
+    if (pending || !runApplication) return;
+    pending = true;
+    const button = root.querySelector<HTMLButtonElement>('[data-testid="start-run"]');
+    const status = root.querySelector<HTMLElement>('[data-testid="run-command-status"]');
+    if (button) button.disabled = true;
+    if (status) status.textContent = 'Starting Run...';
+    const back = root.querySelector<HTMLButtonElement>('[data-testid="back-to-pilots"]');
+    if (back) back.disabled = true;
+    pendingStartRequests.set(pilot.pilotId, request);
+
+    try {
+      const projection = await runApplication.startRun(request);
+      pendingStartRequests.delete(pilot.pilotId);
+      if (projection.kind === 'no-run') {
+        throw new Error('Start Run returned no active Run.');
+      }
+      renderRunProjection(pilot, projection);
+    } catch (error) {
+      if (back) back.disabled = false;
+      pending = false;
+      if (button) button.disabled = false;
+      if (status) status.textContent = error instanceof Error ? error.message : String(error);
+    }
+  });
+
+  bindBackToPilots();
+}
+
+async function enterSalvage(pilot: PilotProfile): Promise<void> {
+  if (!workspaceRepository || !contentApplication) throw new Error('Pre-Run storage is not ready.');
+  renderLoading('Opening the saved Pre-Run pool...');
+  const epoch = screenEpoch;
+  try {
+    const preRun = new PreRunApplication(workspaceRepository, contentApplication, () => crypto.randomUUID());
+    await preRun.open(pilot.pilotId);
+    if (epoch !== screenEpoch) return;
+    stopPreRun = mountPreRun(root, preRun,
+      async () => { if (application) renderChooser(await application.getPilotChooser()); },
+      async () => { await renderPilotRun(pilot); });
+  } catch (error) {
+    if (epoch === screenEpoch) renderRecovery(error instanceof Error ? error.message : String(error));
+  }
+}
+
+async function enterBuild(pilot: PilotProfile): Promise<void> {
+  if (!workspaceRepository || !contentApplication) { renderRecovery('Build storage is not ready.'); return; }
+  renderLoading('Opening the saved Build and its pinned content...');
+  const epoch = screenEpoch;
+  try {
+    const build = new BuildApplication(workspaceRepository, contentApplication);
+    const result = await build.open(pilot.pilotId);
+    if (epoch !== screenEpoch) return;
+    if (result.kind === 'build-content-required') {
+      const tiles = retainedTiles(result.run);
+      page(`<h1>Build Phase</h1><p data-testid="build-content-required">${escapeHtml(result.message)}</p>
+        <p data-testid="starter-complete">Pre-Run is complete. All retained tiles remain saved.</p>
+        <p class="identity" data-testid="active-pilot-id">${escapeHtml(pilot.pilotId)}</p>
+        <p class="identity" data-testid="run-id">${escapeHtml(result.run.runId)}</p>
+        <p data-testid="build-content-version">${escapeHtml(result.run.contentVersion)}</p><p data-testid="build-ruleset-version">${escapeHtml(result.run.rulesetVersion)}</p>
+        <p data-testid="build-collected-tiles">${tiles.map(tile => escapeHtml(tile.letter + ' / ' + tile.subtype)).join(', ')}</p>
+        <p>Retained tiles: <strong data-testid="build-collected-count">${tiles.length}</strong></p>
+        <p class="muted">Use a new Pilot/Run for the development Build pack. Existing Runs are never silently migrated.</p>
+        <button class="secondary" data-testid="back-to-pilots">Back to Pilots</button>`);
+      bindBackToPilots();
+      return;
+    }
+    await showBuild(pilot, build);
+  } catch (error) {
+    if (epoch === screenEpoch) renderRecovery(error instanceof Error ? error.message : String(error));
+  }
+}
+
+async function showBuild(pilot:PilotProfile,build:BuildApplication): Promise<void> {
+  if(!workspaceRepository || !contentApplication) throw Error('Results storage is not ready.');
+  const epoch=screenEpoch;
+  const review = new ReviewApplication(workspaceRepository, contentApplication, ()=>crypto.randomUUID());
+  try { await review.recover(pilot.pilotId); }
+  catch (error) {
+    if (epoch === screenEpoch) renderReviewRecovery(pilot, build, review, error);
+    return;
+  }
+  const results = await workspaceRepository.getResults(pilot.pilotId);
+  const pack = await contentApplication.getPack(results.run.contentVersion, results.run.rulesetVersion);
+  const dueCount = review.dueCount();
+  if(epoch!==screenEpoch)return;
+  page('');
+  stopBuild=mountBuild(root,build,async()=>{if(application)renderChooser(await application.getPilotChooser());},async()=>{
+    if(!workspaceRepository||!contentApplication) throw Error('Map storage is not ready.');
+    renderLoading('Loading saved Map selection...'); const epoch=screenEpoch;
+    try {
+      const attempts=new AttemptApplication(workspaceRepository,contentApplication,()=>crypto.randomUUID(),undefined,build,workspaceRepository);
+      const selection=await attempts.selection(pilot.pilotId);
+      if(epoch!==screenEpoch) return;
+      stopAttempt=mountMapSelection(root,attempts,selection,{back:async()=>showBuild(pilot,build),started:async run=>{
+        if(run.phase==='attempt') showDiagnostic(pilot,run,attempts); else await enterBuild(pilot);
+      }});
+    } catch(error) {
+      // The previous Build view is already disposed; the new screen owns this failure.
+      if(epoch===screenEpoch) renderRecovery(error instanceof Error?error.message:String(error));
+    }
+  },{open:async()=>enterResults(pilot),salvage:async()=>enterPostSalvage(pilot),credits:results.economy.credits,celestium:results.economy.celestium,unsettled:results.outcomes.filter(row=>!row.settlement).length,lastSettled:results.outcomes.some(row=>row.outcome.attemptId===results.run.attempt?.attemptId&&!!row.settlement)}, pack?.review ? { dueCount, open: async()=>enterReview(pilot) } : undefined);
+}
+function renderReviewRecovery(pilot: PilotProfile, build: BuildApplication, review: ReviewApplication, error: unknown): void {
+  page(`<h1>Review recovery</h1><p class="error" data-testid="review-recovery-error">${escapeHtml(error instanceof Error ? error.message : String(error))}</p>
+    <p>Your settled results and saved learning evidence are preserved. Finish preparing due Review before returning to Build.</p>
+    <button class="primary" data-testid="retry-review-recovery">Retry Review preparation</button>`);
+  const epoch = screenEpoch;
+  const retry = root.querySelector<HTMLButtonElement>('[data-testid="retry-review-recovery"]')!;
+  retry.addEventListener('click', () => {
+    if (retry.disabled) return;
+    retry.disabled = true;
+    void (async () => {
+      try {
+        if (review.hasPendingSave()) await review.retry();
+        else await review.recover(pilot.pilotId);
+        if (epoch === screenEpoch) await showBuild(pilot, build);
+      } catch (next) {
+        if (epoch === screenEpoch) renderReviewRecovery(pilot, build, review, next);
+      }
+    })();
+  });
+  retry.focus();
+}
+async function enterCombat(pilot:PilotProfile,run:ActiveRun):Promise<void>{
+  if(!workspaceRepository||!run.attempt){renderRecovery('Combat storage is not ready.');return;}
+  renderLoading('Opening the acknowledged combat Attempt...');const epoch=screenEpoch;
+  try{
+    const combat=new CombatApplication(workspaceRepository,()=>crypto.randomUUID());
+    await combat.open(pilot.pilotId,run.attempt.attemptId);
+    if(epoch!==screenEpoch)return;
+    const pack=hasRenderAssets(run.contentVersion)?await contentApplication?.getPack(run.contentVersion,run.rulesetVersion):undefined;
+    if(epoch!==screenEpoch)return;
+    if(hasRenderAssets(run.contentVersion)&&(!pack||pack.integrity.manifestSha256!==run.attempt.startup.contentDigest))throw Error('The acknowledged Attempt requires its exact pinned render pack.');
+    stopAttempt=mountCombat(root,combat,async()=>enterBuild(pilot),pack??undefined,async()=>enterResults(pilot,run.attempt!.attemptId));
+  }catch(error){if(epoch===screenEpoch)renderRecovery(error instanceof Error?error.message:String(error));}
+}
+function showDiagnostic(pilot:PilotProfile,run:ActiveRun,attempts?:AttemptApplication): void {
+  if(run.attempt?.startup.capability==='combat'){void enterCombat(pilot,run);return;}
+  if(!workspaceRepository||!contentApplication) throw Error('Attempt storage is not ready.');
+  page('');
+  const app=attempts??new AttemptApplication(workspaceRepository,contentApplication,()=>crypto.randomUUID());
+  stopAttempt=mountAttemptDiagnostic(root,app,run,async()=>enterBuild(pilot));
+}
+
+
+async function enterResults(pilot:PilotProfile,attemptId?:string):Promise<void>{
+  if(!workspaceRepository||!contentApplication){renderRecovery('Results storage is not ready.');return;}
+  renderLoading('Opening saved outcomes and acknowledged balances...');const epoch=screenEpoch;
+  try{
+    const results=new ResultsApplication(workspaceRepository,()=>crypto.randomUUID());
+    const state=await results.open(pilot.pilotId);
+    const pack=await contentApplication.getPack(state.run.contentVersion,state.run.rulesetVersion);
+    if(epoch!==screenEpoch)return;
+    const review = pack?.review ? new ReviewApplication(workspaceRepository, contentApplication, ()=>crypto.randomUUID()) : null;
+    stopResults=mountResults(root,results,{back:async()=>enterBuild(pilot),salvage:async()=>enterPostSalvage(pilot),
+      ...(review ? { review: { app: review, open: async()=>showReview(pilot, review) } } : {})},attemptId,pack??undefined);
+  }catch(error){if(epoch===screenEpoch)renderRecovery(error instanceof Error?error.message:String(error));}
+}
+function showReview(pilot: PilotProfile, review: ReviewApplication): void {
+  page('');
+  stopReview = mountReview(root, review, async()=>enterBuild(pilot));
+}
+async function enterReview(pilot: PilotProfile): Promise<void> {
+  if (!workspaceRepository || !contentApplication) { renderRecovery('Review storage is not ready.'); return; }
+  renderLoading('Opening saved due Review...'); const epoch = screenEpoch;
+  try {
+    const review = new ReviewApplication(workspaceRepository, contentApplication, ()=>crypto.randomUUID());
+    await review.open(pilot.pilotId);
+    if (epoch === screenEpoch) showReview(pilot, review);
+  } catch (error) { if (epoch === screenEpoch) renderRecovery(error instanceof Error ? error.message : String(error)); }
+}
+async function enterPostSalvage(pilot:PilotProfile):Promise<void>{
+  if(!workspaceRepository||!contentApplication){renderRecovery('Salvage storage is not ready.');return;}
+  renderLoading('Opening current Cargo and unresolved Salvage...');const epoch=screenEpoch;
+  try{
+    const salvage=new SalvageApplication(workspaceRepository,contentApplication,()=>crypto.randomUUID());
+    await salvage.open(pilot.pilotId);if(epoch!==screenEpoch)return;
+    stopResults=mountSalvage(root,salvage,{back:async()=>enterBuild(pilot),applied:async()=>enterBuild(pilot)});
+  }catch(error){if(epoch===screenEpoch)renderRecovery(error instanceof Error?error.message:String(error));}
+}
+
+function renderRunProjection(pilot: PilotProfile, projection: Exclude<RunProjection, { kind: 'no-run' }>): void {
+  if (projection.kind === 'build') { void enterBuild(pilot); return; }
+  if (projection.kind === 'attempt') { showDiagnostic(pilot,projection.run); return; }
+  if (projection.kind === 'content-required') {
+    page(`
+      <h1>Content Required</h1>
+      <p data-testid="content-required">This Run is preserved, but its pinned Content Pack is unavailable.</p>
+      <p class="identity" data-testid="active-pilot-id">${escapeHtml(pilot.pilotId)}</p>
+      <dl class="facts">
+        <div><dt>Run</dt><dd data-testid="run-id">${escapeHtml(projection.run.runId)}</dd></div>
+        <div><dt>Required content</dt><dd data-testid="missing-content-version">${escapeHtml(projection.missingContentVersion)}</dd></div>
+        <div><dt>Ruleset</dt><dd>${escapeHtml(projection.run.rulesetVersion)}</dd></div>
+      </dl>
+      <div class="actions">
+        <button class="primary" data-testid="retry-content">Retry content</button>
+        <button class="secondary" data-testid="back-to-pilots">Back to Pilots</button>
+      </div>
+    `);
+    root.querySelector<HTMLButtonElement>('[data-testid="retry-content"]')?.addEventListener('click', async () => {
+      await retryContent(pilot);
+    });
+    bindBackToPilots();
+    return;
+  }
+
+  page(`
+    <h1>Pre-Run Salvage</h1>
+    <p data-testid="pre-run-objective">Collect a viable starter for <strong>${escapeHtml(projection.run.starterObjective.targetWord)}</strong> including a Weapon Tile.</p>
+    <p class="identity" data-testid="active-pilot-id">${escapeHtml(pilot.pilotId)}</p>
+    <dl class="facts">
+      <div><dt>Run</dt><dd data-testid="run-id">${escapeHtml(projection.run.runId)}</dd></div>
+      <div><dt>Content</dt><dd data-testid="run-content-version">${escapeHtml(projection.run.contentVersion)}</dd></div>
+      <div><dt>Ruleset</dt><dd data-testid="run-ruleset-version">${escapeHtml(projection.run.rulesetVersion)}</dd></div>
+      <div><dt>Remaining quota</dt><dd data-testid="quota-remaining">${projection.run.quota.remaining} / ${projection.run.quota.total}</dd></div>
+    </dl>
+    <p class="muted">Collect Letter Tiles by clearing their payload cells. Previously committed tiles and quota are preserved.</p>
+    <div class="actions"><button class="primary" data-testid="begin-salvage">Continue Salvage</button><button class="secondary" data-testid="back-to-pilots">Back to Pilots</button></div>
+  `);
+  root.querySelector<HTMLButtonElement>('[data-testid="begin-salvage"]')?.addEventListener('click', () => { void enterSalvage(pilot); });
+  bindBackToPilots();
+}
+
+function renderContentUnavailable(pilot: PilotProfile, message: string): void {
+  page(`
+    <h1>Development content required</h1>
+    <p class="error" data-testid="development-content-required">${escapeHtml(message)}</p>
+    <p class="identity" data-testid="active-pilot-id">${escapeHtml(pilot.pilotId)}</p>
+    <p class="muted">No starter quota, target word, or payload values are invented when the development pack is missing or invalid.</p>
+    <div class="actions">
+      <button class="primary" data-testid="retry-content">Retry content</button>
+      <button class="secondary" data-testid="back-to-pilots">Back to Pilots</button>
+    </div>
+  `);
+  root.querySelector<HTMLButtonElement>('[data-testid="retry-content"]')?.addEventListener('click', async () => {
+    await retryContent(pilot);
+  });
+  bindBackToPilots();
+}
+
+async function retryContent(pilot: PilotProfile): Promise<void> {
+  try {
+    let recoveredDefaultCandidate: unknown;
+    const run = await workspaceRepository?.getActiveRun(pilot.pilotId);
+    if (run && contentApplication && !(await contentApplication.getPack(run.contentVersion, run.rulesetVersion))) {
+      const url = PINNED_PACK_URLS.get(run.contentVersion);
+      if (url) {
+        try {
+          const response = await fetch(url, { cache: 'no-store' });
+          if (response.ok) {
+            const recovered = await response.json();
+            const restored = await contentApplication.restorePinned(recovered, run.contentVersion, run.rulesetVersion);
+            if (!restored.restored) contentCandidateMessage = restored.issues.map(issue => issue.message).join(' ');
+            else if (url === DEVELOPMENT_PACK_URL) recoveredDefaultCandidate = recovered;
+          }
+        } catch (error) {
+          if (error instanceof ContentStorageError) throw error;
+          contentCandidateMessage = error instanceof Error ? error.message : String(error);
+        }
+      }
+    }
+    await refreshDevelopmentCandidate(recoveredDefaultCandidate);
+    await renderPilotRun(pilot);
+  } catch (error) {
+    renderRecovery(error instanceof Error ? error.message : String(error));
+  }
+}
+
+function bindBackToPilots(): void {
   root.querySelector<HTMLButtonElement>('[data-testid="back-to-pilots"]')?.addEventListener('click', async () => {
     if (application) renderChooser(await application.getPilotChooser());
   });
+}
+
+async function refreshDevelopmentCandidate(recoveredDefaultCandidate?: unknown): Promise<void> {
+  if (!contentApplication) return;
+
+  try {
+    // A same-default Retry already fetched this body. Revalidate it through the
+    // normal activation owner without downloading an identical body a second time.
+    let candidate = recoveredDefaultCandidate;
+    if (candidate === undefined) {
+      const response = await fetch(DEVELOPMENT_PACK_URL, { cache: 'no-store' });
+      if (!response.ok) {
+        contentCandidateMessage = `Development Content Pack request failed: ${response.status}.`;
+        return;
+      }
+      candidate = await response.json();
+    }
+
+    const result = await contentApplication.activateCandidate(candidate);
+    contentCandidateMessage = result.activated
+      ? null
+      : result.issues.map((issue) => `${issue.code}: ${issue.message}`).join(' ');
+  } catch (error) {
+    if (error instanceof ContentStorageError) throw error;
+    contentCandidateMessage = error instanceof Error ? error.message : String(error);
+  }
 }
 
 function escapeHtml(value: string): string {
@@ -161,13 +558,33 @@ async function bootstrap(): Promise<void> {
     }
 
     const repository = new DexieWorkspaceRepository();
+    workspaceRepository = repository;
     application = new WorkspaceApplication(repository, () => crypto.randomUUID());
-    const projection = await application.bootstrap();
-    renderChooser(projection);
+    const chooser = await application.bootstrap();
+
+    const contentRepository = new LocalStorageContentPackRepository();
+    contentApplication = new ContentPackApplication(contentRepository, {
+      appVersion: APP_VERSION,
+      rulesetVersion: COMBAT_RULESET_VERSION,
+      supportedRulesetVersions: [DEVELOPMENT_RULESET_VERSION, BUILD_RULESET_VERSION, ATTEMPT_RULESET_VERSION, COMBAT_RULESET_VERSION],
+    });
+    runApplication = new RunApplication(repository, contentApplication, () => crypto.randomUUID());
+
+    try {
+      await contentApplication.bootstrap();
+      await refreshDevelopmentCandidate();
+    } catch (error) {
+      if (error instanceof ContentStorageError) throw error;
+      contentCandidateMessage = error instanceof Error ? error.message : String(error);
+    }
+
+    // Bootstrap recovery is independent of content-cache availability and grants nothing.
+    await new AttemptApplication(repository,contentApplication,()=>crypto.randomUUID()).recoverAtStartup();
+    renderChooser(chooser);
   } catch (error) {
     renderRecovery(error instanceof Error ? error.message : String(error));
   }
 }
 
-window.addEventListener('pagehide', () => lock.release());
+window.addEventListener('pagehide', () => { stopReview?.();stopReview=null;stopResults?.();stopResults=null;stopAttempt?.();stopAttempt=null;stopBuild?.(); stopBuild = null; stopPreRun?.(); stopPreRun = null; lock.release(); });
 void bootstrap();

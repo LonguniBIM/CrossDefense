@@ -14,28 +14,27 @@ Completed and captured here:
 - canonical domain terminology;
 - engineering harness/orchestration;
 - Technology Selection + targeted PoCs;
-- evidence-backed technology ADRs and testing seams.
+- evidence-backed technology ADRs and testing seams;
+- UX/UI + Detailed Design, with Shared Understanding confirmed on 2026-09-29.
 
-Not started intentionally:
+Current implementation status (2026-11-25):
 
-- production application implementation;
-- final UX/UI detailed design;
-- final implementation tickets;
-- production content authoring.
+- Ticket09 is **Implemented / Integrated verification PASS / User acceptance Accepted**, following exact checkpoint validation and reuse of the complete 19 November gate. See [the acceptance record](docs/product/TICKET09_ACCEPTANCE_20261125.md).
+- Ticket10 is **Implemented / Integrated verification PASS / ChatGPT tri-axis PASS / User acceptance Accepted**, development-only, under approved Q15. The user explicitly accepted it on **2026-11-25 (Asia/Ho_Chi_Minh)**; see [the acceptance record](docs/product/TICKET10_ACCEPTANCE_20261125.md). The approved Learning Entry, exact answer, 1+1 Credit policy and immediate-due occurrence contract remain in [the completed plan](docs/plans/completed/ticket10-review-occurrence.md); actual execution, review findings and limits are in [the verification record](docs/product/TICKET10_DEVELOPMENT_VERIFICATION.md).
+- Ticket11 is the next-session implementation target and has not started in this session; Ticket12 remains **ON HOLD**. Earlier ticket-specific evidence and acceptance remain governed by their own records; Ticket02/03 acceptance is not inferred.
+- The user's current instruction authorizes staging, committing, pushing and merging the completed product work. Content authoring retains its approved ticket-specific gates. Deployment, publication beyond the authorized Git actions, provider reviewers, credential setup, suspended orchestration and WFP/G-R/G-P operations remain unauthorized; the refused snapshot operation remains prohibited.
 
-## Why there is still no production root package.json / framework scaffold
+## Production application scaffold
 
-The Technology Selection phase is complete, but the repository deliberately keeps production paths unscaffolded until UX/UI + Detailed Design is settled. The executable package under `prototypes/technology-selection/browser-harness/` is evidence-producing prototype infrastructure, not the production application.
+Ticket 01 established the root production TypeScript + Vite package using the approved Dexie, Zod, Vitest, Playwright, and Web Locks foundation. The executable packages under `prototypes/` remain evidence-producing prototype infrastructure and are not production modules.
 
-See `docs/architecture/TECHNOLOGY_SELECTION_RESULT.md` for accepted technology selections and deliberate deferrals.
+See `docs/architecture/TECHNOLOGY_SELECTION_RESULT.md` and `docs/product/IMPLEMENTATION_BREAKDOWN.md` for the accepted foundation and remaining ticket gates.
 
 ## Intended next sequence
 
-1. Run **UX/UI + Detailed Design** against the approved product, architecture, and technology foundation.
-2. Resolve the overall UI framework and Combat renderer only when concrete screen/render requirements justify the choice.
-3. Refresh the implementation specification with the settled UX and remaining technology decisions.
-4. Re-run `to-tickets` against the actual repository and chosen stack.
-5. Begin production implementation only from approved tickets.
+1. Record the authorized Git publication outcome for the completed product work.
+2. Continue with Ticket11 in a new session using the English implementation prompt.
+3. Keep Ticket12 ON HOLD.
 
 ## High-level architecture
 
@@ -70,6 +69,9 @@ Core principles:
 
 - `CONTEXT.md` — canonical product/domain vocabulary only.
 - `docs/product/MVP_SPEC.md` — approved product/functional contract.
+- `docs/product/UX_UI_DESIGN.md` — approved UX decisions and Shared Understanding.
+- `docs/product/UX_UI_STATE_MATRIX.md` — accepted screen/state contracts and preview verification limits.
+- `docs/plans/completed/ux-ui-detailed-design.md` — UX/UI milestone closure.
 - `docs/architecture/PLATFORM_ARCHITECTURE.md` — Product Platform Design.
 - `docs/architecture/TECHNICAL_ARCHITECTURE.md` — detailed architecture contract.
 - `docs/architecture/TESTING_STRATEGY.md` — primary behavior and browser seams.
@@ -78,8 +80,8 @@ Core principles:
 - `docs/handoff/PRE_HARNESS_HANDOFF.md` — exact resume point after harness setup.
 - `src/` — intentionally framework-neutral module boundaries.
 - `content/` — authoring/runtime content boundary.
-- `tests/` — test seam guidance; framework selection pending.
+- `tests/` — headless behavior and browser verification seams.
 
-## Important warning
+## Implementation authority
 
-Do not treat the empty `src/` folders as permission to start feature implementation. The next phase is **Technology Selection + PoC**, not full implementation.
+Feature work follows the current ticket-specific authorization and content gates recorded above. Ticket10 user acceptance is Accepted. The completed product work is authorized for stage, commit, push and merge. Ticket11 is the next-session implementation target and has not started in this session; Ticket12 remains ON HOLD. Deployment and suspended operations remain unauthorized.

@@ -12,14 +12,19 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "install:browsers": "playwright install chromium"
+    "install:browsers": "playwright install chromium",
+    "content:compile": "node scripts/content/compile-development-pack.mjs"
   },
   "dependencies": {
     "dexie": "4.4.6",
+    "lucide": "1.49.0",
+    "three": "0.186.0",
     "zod": "4.6.5"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
+    "@types/node": "24.19.0",
+    "@types/three": "0.186.0",
     "typescript": "7.0.2",
     "vite": "8.3.1",
     "vitest": "5.0.1"
