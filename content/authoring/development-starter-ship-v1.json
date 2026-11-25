@@ -1,0 +1,24 @@
+{
+  "contentVersion": "development-starter-ship-v1",
+  "schemaVersion": 1,
+  "compatibleRuleset": "development-ruleset-2026-09-30",
+  "minimumAppVersion": "0.1.0",
+  "preRun": {
+    "collectionQuota": 8,
+    "starterObjective": {
+      "targetWord": "SHIP",
+      "requiresWeaponTile": true
+    },
+    "viabilityTiles": [
+      { "letter": "S", "subtype": "Ballistic" },
+      { "letter": "H", "subtype": "Armor" },
+      { "letter": "I", "subtype": "Power" },
+      { "letter": "P", "subtype": "Armor" },
+      { "letter": "S", "subtype": "Ballistic" },
+      { "letter": "H", "subtype": "Armor" },
+      { "letter": "I", "subtype": "Power" },
+      { "letter": "P", "subtype": "Armor" }
+    ]
+  },
+  "assets": []
+}

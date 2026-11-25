@@ -1,0 +1,7 @@
+# Preserve deterministic compiler output bytes regardless of core.autocrlf.
+/public/content/packs/development/manifest.json -text
+/public/content/packs/development-build-ship-v1/manifest.json -text
+
+# Preserve all immutable pack inputs, compiled manifests and curated resources.
+/public/content/packs/**/manifest.json -text
+/content/authoring/** -text

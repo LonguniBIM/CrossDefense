@@ -1,0 +1,23 @@
+import type { Difficulty } from '../attempt/rules';
+
+export const STOCK_AVATARS = ['pilot-blue', 'pilot-gold', 'pilot-violet'] as const;
+
+export type StockAvatarId = (typeof STOCK_AVATARS)[number];
+
+export interface PilotProfile {
+  pilotId: string;
+  nickname: string;
+  avatarId: StockAvatarId;
+  createdAt: string;
+  lastUsedAt: string;
+  /** Absent on legacy/new profiles until an explicit choice; projection defaults to Normal. */
+  lastDifficulty?: Difficulty | undefined;
+}
+
+export function requireNickname(value: string): string {
+  const nickname = value.trim();
+  if (nickname.length === 0) {
+    throw new Error('Pilot nickname is required.');
+  }
+  return nickname;
+}

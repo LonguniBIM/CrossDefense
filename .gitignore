@@ -10,7 +10,7 @@ tmp/
 .cache/
 coverage/
 dist/
-build/
+/build/
 
 # Local scratch/harness output may be refined after harness setup
 .scratch/

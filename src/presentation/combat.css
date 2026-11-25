@@ -1,0 +1,37 @@
+.cb-shell { --cell: min(28px, calc((100dvh - 300px) / 20)); height:100dvh; box-sizing:border-box; padding:16px; width:100%; max-width:1680px; margin:auto; display:flex; flex-direction:column; gap:12px; }
+.cb-header {display:flex; align-items:center; justify-content:space-between; gap:16px; flex:none;}
+.cb-header h1 {font-size:26px;margin:3px 0 0;}
+.cb-header span {color:#73ebe5;font-size:11px;letter-spacing:1px;}
+.cb-header .actions {display:flex;gap:8px;flex-wrap:wrap;}
+.cb-shell button {font-size:13px;padding:9px 12px;}
+.cb-shell button:disabled {opacity:.48;cursor:default;}
+.cb-shell [hidden] {display:none!important;}
+.cb-layout {display:grid;grid-template-columns:minmax(390px,1fr) auto;gap:12px;min-height:0;flex:1;}
+.cb-panel {background:#121e30;border:1px solid #2b4668;border-radius:14px;padding:16px;min-width:0;box-sizing:border-box;}
+.cb-hud {overflow:auto;}
+.cb-hud h2 {font-size:22px;margin:0 0 12px;}
+.cb-hud h3 {font-size:17px;margin:10px 0;}
+.cb-hud p {line-height:1.5;margin:12px 0;}
+.cb-hud .identity {font-size:11px;overflow-wrap:anywhere;}
+.cb-resource-grid {display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.cb-resource-grid label {display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-top:8px;}
+.cb-resource-grid progress {width:100%;height:13px;accent-color:#8de3cd;}
+.cb-resource-grid small {display:block;min-height:30px;font-size:12px;color:#afbed1;margin-top:7px;}
+.cb-facts {display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin:20px 0;font-size:13px;}
+.cb-facts dt {color:#afbed1;}
+.cb-facts dd {margin:0;text-align:right;}
+.cb-status {font-weight:600;color:#8de3cd;}
+.cb-notice {background:#243249;border-left:3px solid #f0cd8a;padding:10px 12px;}
+.cb-controls {font-size:12px;color:#afbed1;}
+.cb-game {display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow:hidden;}
+.cb-harvest-title {font-size:13px;align-self:stretch;margin:10px 0 0;}
+.cb-game .pr-harvest {align-self:stretch;gap:4px;margin-top:6px;}
+.cb-game .pr-harvest-item {font-size:10px;min-height:28px;padding:4px 6px;}
+.cb-game .pr-harvest-item small {font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cb-game .pr-cell[data-subtype="Missile"] {background:#654129;border-color:#f0b181;}
+.cb-game .pr-cell[data-subtype="Laser"] {background:#235450;border-color:#88ddd8;}
+.cb-game .pr-cell[data-subtype="Shield"] {background:#204c70;border-color:#80bcf2;}
+.cb-game .pr-cell[data-subtype="System"] {background:#483666;border-color:#c7a8ee;}
+.cb-game .pr-cell[data-subtype="Engine"] {background:#644624;border-color:#f5bc79;}
+.cb-game .pr-cell[data-subtype="Support"] {background:#583348;border-color:#e59eb6;}
+@media (max-width:1279px),(max-height:719px) {.cb-shell {min-height:440px;height:auto;}.cb-layout {grid-template-columns:1fr;}.cb-game {display:none;}.cb-resource-grid {gap:14px;}}

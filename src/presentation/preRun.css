@@ -1,0 +1,48 @@
+.pr-shell { --cell: min(28px, calc((100dvh - 320px) / 20)); width: min(1220px, calc(100% - 32px)); margin: 0 auto; padding: 16px 0; }
+.pr-panel { background: #121e30; border: 1px solid #2b4668; border-radius: 16px; padding: 16px 20px; }
+.pr-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.pr-header h1 { margin: 0; font-size: 26px; }
+.pr-header span { color: #9fb4cf; font-size: 13px; }
+.pr-layout { display: grid; grid-template-columns: minmax(260px, 1fr) auto; gap: 28px; align-items: start; }
+.pr-summary h2 { margin: 12px 0 8px; font-size: 21px; }
+.pr-summary p { margin: 8px 0; line-height: 1.45; }
+.pr-facts { display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; font-size: 13px; margin: 18px 0; }
+.pr-facts dt { color: #9fb4cf; }
+.pr-facts dd { margin: 0; overflow-wrap: anywhere; }
+.pr-quota { font-size: 32px; font-weight: 750; color: #8de3cd; }
+.pr-notice { border-left: 3px solid #f0cd8a; background: #1e2b3f; padding: 10px 12px; border-radius: 4px; }
+.pr-status { min-height: 24px; color: #8de3cd; }
+.pr-controls { margin-top: 12px; font-size: 12px; line-height: 1.65; color: #afbed1; }
+.pr-cluster { display: grid; grid-template-columns: calc(var(--cell) * 4) calc(var(--cell) * 10 + 2px) calc(var(--cell) * 4); gap: 12px; align-items: start; }
+.pr-label { margin: 0 0 8px; color: #afbed1; font-size: 12px; letter-spacing: 1px; }
+.pr-well { width: calc(var(--cell) * 10 + 2px); height: calc(var(--cell) * 20 + 2px); border: 1px solid #48658a; position: relative; overflow: hidden; background-color: #080f1c; background-image: linear-gradient(#132236 1px, transparent 1px), linear-gradient(90deg, #132236 1px, transparent 1px); background-size: var(--cell) var(--cell); outline-offset: 3px; }
+.pr-layer { position: absolute; inset: 0; pointer-events: none; }
+.pr-cell { position: absolute; left: calc(var(--x) * var(--cell)); top: calc(var(--y) * var(--cell)); width: var(--cell); height: var(--cell); background: #2b4668; border: 1px solid #6a819e; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #f8fbff; border-radius: 3px; overflow: hidden; }
+.pr-cell b { font-size: calc(var(--cell) * .62); line-height: 1; }
+.pr-cell small { font-size: max(7px, calc(var(--cell) * .27)); line-height: 1; letter-spacing: -.3px; }
+.pr-cell[data-subtype="Ballistic"] { background: #633d20; border-color: #efb579; }
+.pr-cell[data-subtype="Armor"] { background: #304c70; border-color: #98c6fb; }
+.pr-cell[data-subtype="Power"] { background: #22533e; border-color: #8de3cd; }
+.pr-cell.active { box-shadow: inset 0 0 0 1px #edf3fb; z-index: 4; }
+.pr-cell.locked { filter: brightness(.84); }
+.pr-cell.ghost { background: transparent; border: 1px dashed #8da4bf; opacity: .65; z-index: 1; }
+.pr-preview { position: relative; width: calc(var(--cell) * 4); height: calc(var(--cell) * 4); margin: 0 0 10px; border-radius: 6px; }
+.pr-empty { color: #7f97b4; font-size: 12px; }
+.pr-board-muted { opacity: .48; }
+.pr-harvest { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin-top: 10px; }
+.pr-harvest-item { border: 1px solid #294463; background: #0f1a2a; border-radius: 5px; padding: 5px 7px; font-size: 11px; min-height: 31px; }
+.pr-harvest-item strong { float: right; color: #8de3cd; }
+.pr-harvest-item small { color: #afbed1; display: block; }
+.pr-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 12px; margin-top: 8px; color: #afbed1; }
+.pr-clear-row { position: absolute; left: 0; width: 100%; height: var(--cell); top: calc(var(--y) * var(--cell)); background: #8de3cd; opacity: .4; pointer-events: none; z-index: 5; }
+.pr-shell button { font-size: 13px; padding: 9px 12px; }
+.pr-shell button:disabled { cursor: default; opacity: .5; }
+.pr-shell [hidden] { display: none !important; }
+.pr-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.pr-collected-list { font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+@media (max-width: 1279px), (max-height: 719px) {
+  .pr-shell { --cell: 18px; width: calc(100% - 24px); }
+  .pr-layout { grid-template-columns: 1fr; }
+  .pr-game { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .pr-clear-row { background: transparent; border: 2px solid #8de3cd; opacity: 1; } }

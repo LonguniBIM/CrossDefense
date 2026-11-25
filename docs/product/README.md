@@ -12,6 +12,23 @@ files after actual product domains, such as `overview.md`, `billing.md`,
 
 - [MVP_SPEC.md](MVP_SPEC.md): Approved Product Specification and MVP boundaries for the Vocabulary Ship Game. Covers gameplay loops, falling-block spelling mechanics, crossword ship construction, combat resolution, progression economy, and local-first boundaries.
 
+- [UX_UI_DESIGN.md](UX_UI_DESIGN.md): Approved UX/UI foundations and interaction direction from Q228-Q283; Shared Understanding for the consolidated design confirmed on 2026-09-29.
+
+- [UX_UI_STATE_MATRIX.md](UX_UI_STATE_MATRIX.md): Consolidated screen/action/persistence and recovery contracts, verification evidence, and explicit deferrals.
+- [UX_UI_PREVIEW.html](UX_UI_PREVIEW.html): Interactive illustrative design review; no production gameplay or saved data.
+
+- [UI_COMPONENTS_AND_RENDERER.md](UI_COMPONENTS_AND_RENDERER.md): Q284-Q286 component/icon contract and fixed-camera 2.5D experiment.
+
+## Implementation Handoff
+
+- [IMPLEMENTATION_SPEC.md](IMPLEMENTATION_SPEC.md): Approved first durable playable slice contract; current ticket authority is recorded in its dated opening notice.
+- [IMPLEMENTATION_BREAKDOWN.md](IMPLEMENTATION_BREAKDOWN.md): Approved vertical tickets, acceptance proof, dependencies and remaining full-MVP scope; no external tracker issues published.
+- [TICKET09_ACCEPTANCE_20261125.md](TICKET09_ACCEPTANCE_20261125.md): Ticket09 accepted after exact checkpoint validation; complete 19 November technical evidence remains applicable.
+- [DEVELOPMENT_REVIEW_SHIP_V1.md](DEVELOPMENT_REVIEW_SHIP_V1.md): Approved Q15 Learning Entry, exact hints/answer, reward policy and immutable pack identity.
+- [TICKET10_DEVELOPMENT_VERIFICATION.md](TICKET10_DEVELOPMENT_VERIFICATION.md): Ticket10 engineering implementation, separate review axes, executed verification and explicit limits. Integrated verification and ChatGPT tri-axis PASS; explicit user acceptance is recorded separately below.
+- [TICKET10_ACCEPTANCE_20261125.md](TICKET10_ACCEPTANCE_20261125.md): Explicit Ticket10 user acceptance on 2026-11-25 (Asia/Ho_Chi_Minh) and authority to stage, commit, push and merge the completed product work. Ticket11 is the next-session implementation target and has not started here; Ticket12 remains ON HOLD. Deployment and suspended operations remain unauthorized.
+- [Ticket10 completed plan](../plans/completed/ticket10-review-occurrence.md): Approved Q15 contract, implementation decisions, finding closure and preserved engineering history.
+
 ## Update Rule
 
 When behavior changes:

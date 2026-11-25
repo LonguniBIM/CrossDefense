@@ -38,17 +38,20 @@ Final local validation on `DESKTOP-DBD6QJO`:
 
 A harness race was found while running the combined suite: PoC-3 exposed its API before asynchronous bootstrap completed. The entry point now publishes the API only after bootstrap, and the full suite passes. The standard Playwright configuration intentionally excludes PoC-4 because its offline service-worker test requires the production-preview configuration.
 
-## Deliberately unresolved
+## Historical Deferrals (Before 2026-10-01 Approval)
 
 The following choices are not yet justified by evidence and remain open:
 - overall UI framework;
-- Combat renderer / 2D engine;
+- Combat renderer for the fixed-camera 2.5D direction approved in Q286 (2026-09-30);
 - dedicated state-management library;
 - production audio abstraction/library beyond browser-native capability;
 - detailed content-authoring/compiler implementation.
 
 These are not blockers for the settled Domain, persistence, offline, testing, or Build architecture. They should be resolved only when UX/UI Detailed Design or a renderer-specific prototype creates a concrete need.
 
+## Follow-Up Evidence (2026-09-30)
+Q286 authorizes fixed-camera 2.5D Combat. The [renderer experiment](../../prototypes/fixed-camera-renderer/RESULTS.md) demonstrates a readable DOM/Three.js fixture on Intel UHD Graphics with focused pause/recovery checks. This supplements the foundation PoCs; it does not settle the production renderer or overall UI framework. The active follow-up is [UI components and renderer refinement](../plans/completed/ui-components-fixed-camera-renderer.md).
+
 ## Next phase
 
-Proceed to UX/UI + Detailed Design while preserving the accepted ADRs and the headless Domain boundary. If Combat rendering requirements become concrete enough to discriminate between renderer candidates, run a focused renderer prototype before production implementation.
+The user accepted the current refined visual design on 2026-10-01 (Asia/Bangkok). Proceed through the [refreshed implementation specification](../product/IMPLEMENTATION_SPEC.md) and [proposed tickets](../product/IMPLEMENTATION_BREAKDOWN.md). T1-T4 propose typed DOM for the first slice, a Three.js renderer adapter, Application-owned projections without a state library, and a small validated development pack. T1-T4, the refreshed specification and all 12 tickets were approved on 2026-10-01 at 02:48 Asia/Bangkok; see [ADR 0012](../adr/0012-first-durable-slice-presentation-and-content.md). Prior deferrals above are historical for this slice. Existing ADRs remain accepted. Execution is explicitly ON HOLD until the user asks to begin.

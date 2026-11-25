@@ -1,0 +1,145 @@
+{
+  "contentVersion": "development-attempt-ship-v1",
+  "schemaVersion": 3,
+  "compatibleRuleset": "development-attempt-ruleset-v1",
+  "minimumAppVersion": "0.1.0",
+  "preRun": {
+    "collectionQuota": 8,
+    "starterObjective": {
+      "targetWord": "SHIP",
+      "requiresWeaponTile": true
+    },
+    "viabilityTiles": [
+      {
+        "letter": "S",
+        "subtype": "Ballistic"
+      },
+      {
+        "letter": "H",
+        "subtype": "Armor"
+      },
+      {
+        "letter": "I",
+        "subtype": "Power"
+      },
+      {
+        "letter": "P",
+        "subtype": "Armor"
+      },
+      {
+        "letter": "S",
+        "subtype": "Ballistic"
+      },
+      {
+        "letter": "H",
+        "subtype": "Armor"
+      },
+      {
+        "letter": "I",
+        "subtype": "Power"
+      },
+      {
+        "letter": "P",
+        "subtype": "Armor"
+      }
+    ]
+  },
+  "build": {
+    "hull": {
+      "id": "development-diamond-13",
+      "width": 5,
+      "height": 5,
+      "cells": [
+        {
+          "x": 2,
+          "y": 0
+        },
+        {
+          "x": 1,
+          "y": 1
+        },
+        {
+          "x": 2,
+          "y": 1
+        },
+        {
+          "x": 3,
+          "y": 1
+        },
+        {
+          "x": 0,
+          "y": 2
+        },
+        {
+          "x": 1,
+          "y": 2
+        },
+        {
+          "x": 2,
+          "y": 2
+        },
+        {
+          "x": 3,
+          "y": 2
+        },
+        {
+          "x": 4,
+          "y": 2
+        },
+        {
+          "x": 1,
+          "y": 3
+        },
+        {
+          "x": 2,
+          "y": 3
+        },
+        {
+          "x": 3,
+          "y": 3
+        },
+        {
+          "x": 2,
+          "y": 4
+        }
+      ]
+    },
+    "supportedSpellings": [
+      {
+        "spelling": "SHIP",
+        "cefr": "Unknown"
+      },
+      {
+        "spelling": "SHIPS",
+        "cefr": "Unknown"
+      },
+      {
+        "spelling": "HIP",
+        "cefr": "Unknown"
+      },
+      {
+        "spelling": "HIPS",
+        "cefr": "Unknown"
+      },
+      {
+        "spelling": "SIP",
+        "cefr": "Unknown"
+      },
+      {
+        "spelling": "SIPS",
+        "cefr": "Unknown"
+      }
+    ]
+  },
+  "assets": [],
+  "launch": {
+    "capability": "launch-recovery-only",
+    "maps": [
+      {
+        "mapId": "development-map-01",
+        "name": "Map 1 - Development",
+        "initiallyAvailable": true
+      }
+    ]
+  }
+}
