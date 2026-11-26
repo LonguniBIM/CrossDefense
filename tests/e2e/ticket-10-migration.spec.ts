@@ -8,8 +8,8 @@ test('v8 to v9 preserves every old row, paid economy, outcomes and pins while ad
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Pilot chooser', exact: true })).toBeVisible();
   const after = await inspectReviewSave(page);
-  expect(after.version).toBe(90);
-  expect(after.tables.workspace).toEqual([{ key: 'workspace', schemaVersion: 9 }]);
+  expect(after.version).toBe(100);
+  expect(after.tables.workspace).toEqual([{ key: 'workspace', schemaVersion: 10 }]);
   for (const name of Object.keys(before.tables).filter(name => name !== 'workspace')) expect(after.tables[name], name).toEqual(before.tables[name]);
   for (const name of reviewTables) expect(after.tables[name], name).toEqual([]);
   await page.getByTestId('pilot-card').getByRole('button', { name: 'Continue', exact: true }).click();

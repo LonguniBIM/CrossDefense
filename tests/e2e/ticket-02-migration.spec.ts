@@ -52,7 +52,7 @@ test('upgrades a valid v1 Workspace without changing its Pilot data', async ({ p
   await expect(page.getByRole('heading', { name: 'Pilot chooser' })).toBeVisible();
   const upgraded = await inspectSave(page);
   expect(upgraded.pilots).toEqual(original.pilots);
-  expect(upgraded.workspace).toEqual([{ key: 'workspace', schemaVersion: 9 }]);
+  expect(upgraded.workspace).toEqual([{ key: 'workspace', schemaVersion: 10 }]);
   expect(upgraded.stores).toContain('runs');
 });
 

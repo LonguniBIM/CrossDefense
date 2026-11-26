@@ -182,10 +182,15 @@ test('minimum viewport fits equal cell sizes; pause and resize stop simulation u
   await expect(page.getByTestId('resume-salvage')).toBeDisabled();
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.getByTestId('resume-salvage').click();
+  // Resume resets elapsed time; establish its baseline before advancing the controlled clock.
+  await frame(page, 0);
+  await expect(page.getByTestId('pause-message')).toContainText('resuming in 3');
   await frame(page, 2999);
+  await expect(page.getByTestId('pause-message')).toContainText('resuming in 1');
   expect(await page.getByTestId('active-piece').innerHTML()).toBe(paused);
   await frame(page, 1);
   await expect(page.getByTestId('pause-message')).toBeHidden();
+  expect(await page.getByTestId('active-piece').innerHTML()).toBe(paused);
 });
 
 
@@ -196,9 +201,18 @@ test('a delayed Pre-Run frame drops queued Hold and explicit Resume restores inp
   await expect(page.getByTestId('pause-message')).toContainText('delayed frame');
   await expect(page.getByTestId('hold-piece').locator('.pr-preview')).toHaveCount(0);
   await expect(page.getByTestId('active-piece')).toHaveAttribute('data-piece-id', initialId!);
+  const paused = await page.getByTestId('active-piece').innerHTML();
   await page.getByTestId('resume-salvage').click();
-  await frame(page, 2999); await frame(page, 1);
+  // The first frame establishes the reset Resume baseline without consuming elapsed time.
+  await frame(page, 0);
+  await expect(page.getByTestId('pause-message')).toContainText('resuming in 3');
+  await frame(page, 2999);
+  await expect(page.getByTestId('pause-message')).toContainText('resuming in 1');
+  expect(await page.getByTestId('active-piece').innerHTML()).toBe(paused);
+  await frame(page, 1);
   await expect(page.getByTestId('pause-message')).toBeHidden();
+  expect(await page.getByTestId('active-piece').innerHTML()).toBe(paused);
+  await expect(page.getByTestId('hold-piece').locator('.pr-preview')).toHaveCount(0);
   await page.keyboard.press('c'); await frame(page);
   await expect(page.getByTestId('hold-piece').locator('.pr-preview')).toHaveAttribute('data-piece-id', initialId!);
   await expect(page.getByTestId('salvage-quota')).toHaveText('8 / 8');

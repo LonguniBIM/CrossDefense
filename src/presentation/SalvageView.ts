@@ -51,7 +51,8 @@ export function mountSalvage(root: HTMLElement, app: SalvageApplication, callbac
     const after = preview.after;
     get('salvage-preview-power').textContent = after ? 'Power Available ' + formatHundredths(preview.before.power.available) + ' -> ' + formatHundredths(after.power.available) + '; Required ' + formatHundredths(preview.before.power.required) + ' -> ' + formatHundredths(after.power.required) + '; Surplus ' + formatHundredths(preview.before.power.surplus) + ' -> ' + formatHundredths(after.power.surplus) + '.' : 'Complete capacity-valid choices to inspect Build impact.';
     get('salvage-preview-words').textContent = after ? 'Equipped words: ' + (preview.before.words.filter(word => word.supported).map(word => word.spelling + ' (' + word.axis + ')').join(', ') || 'None') + ' -> ' + (after.words.filter(word => word.supported).map(word => word.spelling + ' (' + word.axis + ')').join(', ') || 'None') + '.' : '';
-    for (const control of root.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>('input,select,button')) control.disabled = frozen;
+    // Feature save locks do not own the shared Workspace Settings launcher.
+    for (const control of root.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>('input,select,button:not(.st-launcher)')) control.disabled = frozen;
     get<HTMLButtonElement>('review-salvage').disabled = frozen || !preview.valid;
     get<HTMLButtonElement>('retry-salvage').hidden = !app.hasPendingSave(); get<HTMLButtonElement>('retry-salvage').disabled = busy;
   }

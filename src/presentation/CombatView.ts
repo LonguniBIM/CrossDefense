@@ -4,18 +4,20 @@ import type {ContentPackManifest} from '../domain/content/contentPack';
 import {RenderedCombatSurface} from './renderer/RenderedCombatSurface';
 import {subtypeIcon} from './renderer/SubtypeIcon';
 import type {CombatApplication} from '../application/combat/CombatApplication';
-import type {BoardAction,BoardInput} from '../domain/preRun/board';
+import type {BoardInput} from '../domain/preRun/board';
+import type { SettingsAccess } from './SettingsView';
+import { controlsText, GameplayKeyboard } from './GameplayInput';
 import {MODULE_SUBTYPES} from '../domain/content/contentPack';
 import {RESOURCE_SCALE} from '../domain/combat/rules';
 import {renderCombatBoard} from './CombatBoardSurface';
-const keys:Readonly<Record<string,BoardAction>>={ArrowLeft:'left',ArrowRight:'right',ArrowDown:'down',ArrowUp:'cw',KeyX:'cw',KeyZ:'ccw',Space:'drop',KeyC:'hold',ShiftLeft:'hold',ShiftRight:'hold'};
 const display=(value:number)=>(value/RESOURCE_SCALE).toFixed(2).replace(/\.?0+$/,'')||'0';
 
 /** Minimal factual HUD. Ticket08 owns the separate 2.5D renderer. */
-export function mountCombat(root:HTMLElement,app:CombatApplication,onReturn:()=>Promise<void>,renderPack?:ContentPackManifest,onResults?:()=>Promise<void>):()=>void{
+export function mountCombat(root:HTMLElement,app:CombatApplication,onReturn:()=>Promise<void>,renderPack?:ContentPackManifest,onResults?:()=>Promise<void>,settings?:SettingsAccess):()=>void{
   const controller=new AbortController(),signal=controller.signal;
   let visuals:RenderedCombatSurface|null=null;
   let live=true,frameId=0,last:number|null=null,busy=false,inputs:BoardInput[]=[];
+  const keyboard=new GameplayKeyboard(input=>inputs.push(input),()=>pause('Paused by player.'));
   root.innerHTML=`<main class="cb-shell"><header class="cb-header"><div><span>DEVELOPMENT COMBAT</span><h1>Map combat</h1></div><div class="actions"><button data-testid="pause-combat" class="secondary">Pause</button><button data-testid="resume-combat" class="primary" hidden>Resume</button><button data-testid="retry-combat" class="primary" hidden>Retry save</button><button data-testid="abandon-combat" class="secondary">Abandon</button><button data-testid="combat-results" class="primary" hidden>View results</button><button data-testid="return-combat-build" class="primary" hidden>Return to Build</button></div></header>
     <div class="cb-layout"><section class="cb-panel cb-hud" aria-label="Deterministic combat HUD">
       <h2 data-testid="combat-map-name"></h2><p class="identity" data-testid="combat-attempt-id"></p>
@@ -34,6 +36,7 @@ export function mountCombat(root:HTMLElement,app:CombatApplication,onReturn:()=>
   function render():void{
     if(!live)return;
     const view=app.projection(),battle=view.simulation.battle,enemy=battle.enemy,run=view.run;
+    root.querySelector<HTMLElement>('.cb-controls')!.textContent=controlsText(settings?.current())+' Only clearing a payload cell collects its tile.';
     get('combat-map-name').textContent=run.attempt!.startup.map.name+' / '+run.attempt!.difficulty;
     get('combat-attempt-id').textContent=run.attempt!.attemptId;
     for(const [prefix,ship] of [['player',battle.player],['enemy',enemy]] as const){
@@ -48,7 +51,7 @@ export function mountCombat(root:HTMLElement,app:CombatApplication,onReturn:()=>
     get('combat-time').textContent=(remaining/60).toFixed(1)+' s';get('combat-tick').textContent=String(battle.tick);get('board-tick').textContent=String(view.simulation.board.tick);
     get('combat-status').textContent=view.status==='ended'?'Outcome saved: '+(view.outcome?.terminal.kind??run.attempt!.status)+(view.outcome?.terminal.causes.length?' - '+view.outcome.terminal.causes.join(', '):''):
       view.status==='pending'?'Saving outcome. Both simulations are stopped.':view.status==='save-failed'?'Save failed. Retry the same operation.':view.status==='runtime-fault'?'Runtime stopped. Reload to recover the saved Attempt.':view.status==='paused'?'Paused.':'Auto-battle and Falling Blocks share one simulation clock.';
-    get('combat-pause').hidden=!view.pauseReason;get('combat-pause').textContent=view.resumeRemaining!==null?'Resuming in '+Math.max(1,Math.ceil(view.resumeRemaining/1000))+'...':view.pauseReason;
+    get('combat-pause').hidden=!view.pauseReason;get('combat-pause').textContent=view.resumeRemaining!==null?'Resuming in '+Math.max(1,Math.ceil((view.resumeRemaining-1e-7)/1000))+'...':view.pauseReason;
     get('combat-error').hidden=!view.error;get('combat-error').textContent=view.error;
     get<HTMLButtonElement>('pause-combat').disabled=view.status==='ended'||view.status==='runtime-fault'||!!view.pauseReason;
     get<HTMLButtonElement>('resume-combat').hidden=!view.pauseReason||view.status==='ended';get<HTMLButtonElement>('resume-combat').disabled=!safe()||view.resumeRemaining!==null||busy||app.hasPendingSave()||view.status==='runtime-fault'||(!!renderPack&&!visuals?.available);
@@ -67,28 +70,20 @@ export function mountCombat(root:HTMLElement,app:CombatApplication,onReturn:()=>
     renderCombatBoard(root,view.simulation.board,view.status!=='playing',!!renderPack);
     visuals?.render(view);
   }
-  function pause(reason:string):void{app.pause(reason);inputs=[];render();}
+  function clearInput():void{inputs=[];keyboard.clear();app.clearInput();}
+  function pause(reason:string):void{app.pause(reason);clearInput();last=null;render();}
   async function action(fn:()=>Promise<unknown>):Promise<void>{
-    if(busy)return;busy=true;inputs=[];app.clearInput();
+    if(busy)return;busy=true;clearInput();
     try{const pending=fn();render();await pending;}catch(error){pause(error instanceof Error?error.message:String(error));}
     finally{busy=false;last=null;if(live){render();if(app.projection().status==='playing')get('combat-board').focus();}}
   }
   const onKey=(event:KeyboardEvent)=>{
-    const command=keys[event.code];
-    // A release clears held input even after in-page focus moves to a control.
-    // Do not prevent the native keyup default (for example a button's Space activation).
-    if(event.type==='keyup'){
-      if(command&&!busy&&(!renderPack||visuals?.available)&&app.projection().status==='playing')inputs.push({action:command,down:false,code:event.code,pieceId:app.projection().simulation.board.active.id});
-      return;
-    }
-    if(event.target instanceof HTMLElement&&(event.target.matches('input,textarea,select')||event.target.isContentEditable))return;
-    if(event.code==='Escape'&&event.type==='keydown'&&!event.repeat){event.preventDefault();pause('Paused by player.');return;}
-    if(!command||event.repeat||busy||(!!renderPack&&!visuals?.available)||app.projection().status!=='playing')return;
-    if(event.target instanceof HTMLElement&&event.target.closest('button'))return;
-    event.preventDefault();inputs.push({action:command,down:event.type==='keydown',code:event.code,pieceId:app.projection().simulation.board.active.id});
+    const view=app.projection();
+    keyboard.handle(event,{bindings:settings?.current().bindings,
+      pieceId:!busy&&(!renderPack||visuals?.available)&&view.status==='playing'?view.simulation.board.active.id:null});
   };
   get('pause-combat').addEventListener('click',()=>pause('Paused by player.'),{signal});
-  get('resume-combat').addEventListener('click',()=>{if(safe()){app.requestResume();inputs=[];render();}},{signal});
+  get('resume-combat').addEventListener('click',()=>{if(safe()){app.requestResume();clearInput();last=null;render();}},{signal});
   get('retry-combat').addEventListener('click',()=>void action(()=>app.retry()),{signal});
   get('combat-results').addEventListener('click',()=>{if(onResults)void action(onResults);},{signal});
   get('return-combat-build').addEventListener('click',()=>void action(onReturn),{signal});
@@ -109,14 +104,22 @@ export function mountCombat(root:HTMLElement,app:CombatApplication,onReturn:()=>
     if(!live)return;
     try{
       const elapsed=last===null?0:Math.max(0,timestamp-last);last=timestamp;
-      if(!busy&&(!renderPack||visuals?.available)){const queued=inputs;inputs=[];const wasCountdown=app.projection().resumeRemaining!==null;const result=app.frame(elapsed,queued);if(app.hasPendingSave())render();const updated=await result;if(updated.resetClock)last=null;if(wasCountdown&&updated.projection.status==='playing')get('combat-board').focus();}
-      else {last=null;inputs=[];app.clearInput();}
+      if(!busy&&(!renderPack||visuals?.available)){
+        const queued=inputs;inputs=[];const wasCountdown=app.projection().resumeRemaining!==null;
+        const result=app.frame(elapsed,queued);
+        if(app.hasPendingSave()){clearInput();render();}
+        const updated=await result;
+        if(updated.resetClock){last=null;clearInput();}
+        if(wasCountdown&&updated.projection.status==='playing')get('combat-board').focus();
+      }else {last=null;clearInput();}
       render();
     }catch(error){pause(error instanceof Error?error.message:String(error));}
     finally{if(live)frameId=requestAnimationFrame(frame);}
   }
-  if(renderPack)visuals=new RenderedCombatSurface(root,renderPack,{fault:reason=>pause(reason),ready:()=>{last=null;inputs=[];if(live){render();get('combat-board').focus();}}});
-  if(!safe())app.pause('Paused: window is hidden or below the minimum size.');
+  if(safe()&&!document.hasFocus())pause('Paused because the game lost focus.');
+  settings?.attach(root,()=>pause('Paused for Settings. Close Settings, then choose Resume.'));
+  if(renderPack)visuals=new RenderedCombatSurface(root,renderPack,{fault:reason=>pause(reason),ready:()=>{last=null;clearInput();if(live){render();if(app.projection().status==='playing'&&!document.querySelector('dialog[open]'))get('combat-board').focus();}}});
+  if(!safe())pause('Paused: window is hidden or below the minimum size.');
   render();get('combat-board').focus();frameId=requestAnimationFrame(frame);
-  return ()=>{live=false;visuals?.dispose();controller.abort();cancelAnimationFrame(frameId);inputs=[];app.clearInput();for(const dialog of root.querySelectorAll('dialog'))dialog.close('cancel');};
+  return ()=>{live=false;visuals?.dispose();controller.abort();cancelAnimationFrame(frameId);clearInput();for(const dialog of root.querySelectorAll('dialog'))dialog.close('cancel');};
 }

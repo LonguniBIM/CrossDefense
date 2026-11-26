@@ -8,6 +8,10 @@ This glossary defines canonical product/domain language for the vocabulary ship-
 The browser-local container that owns all Pilot Profiles and the authoritative local game state for the MVP.
 _Avoid_: Account, cloud account
 
+**Workspace Settings**:
+Device-local gameplay bindings, audio channel preferences and reduced-motion preference shared by every Pilot in the same Local Guardian Workspace. They remain distinct from Pilot difficulty, tutorial and learning state.
+_Avoid_: Pilot preferences, Ruleset
+
 **Pilot Profile**:
 An independent learner/player progression inside a Local Guardian Workspace, including permanent progression, learning history, review schedule, and one active Run.
 _Avoid_: User account, character account

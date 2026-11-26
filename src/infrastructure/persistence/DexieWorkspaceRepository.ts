@@ -1,3 +1,6 @@
+import { settingsCommandFingerprint, validatedSettingsCommand, type SettingsRepository, type SettingsState, type SaveSettingsCommand, type SettingsOperation } from '../../application/workspace/SettingsRepository';
+import { DEFAULT_SETTINGS, SettingsRejection, validateSettingsForSave } from '../../domain/workspace/settings';
+import { SettingsRecordSchema, SettingsOperationSchema, validateSettingsHistory, type SettingsRecord } from './SettingsCodec';
 import type { ReviewRepository, ReviewState } from '../../application/review/ReviewRepository';
 import { applyReviewCommand, ensureReviewOccurrence, reviewCommandFingerprint, ensureReviewFingerprint, assertReviewHistory, ReviewRejection,
   type EnsureReviewCommand, type ReviewCommand, type ReviewOccurrence, type ReviewOutcomeLink, type ReviewRewardReceipt, type ReviewOperationReceipt } from '../../domain/review/occurrence';
@@ -35,7 +38,7 @@ import type {
 
 const DB_NAME = 'crossdefense-player-data';
 const WORKSPACE_KEY = 'workspace';
-const CURRENT_SCHEMA_VERSION = 9;
+const CURRENT_SCHEMA_VERSION = 10;
 
 const PilotSchema = z.object({
   pilotId: z.string().min(1),
@@ -145,6 +148,8 @@ class CrossDefenseDatabase extends Dexie {
   reviewLinks!: EntityTable<ReviewOutcomeLink, 'attemptId'>;
   reviewRewards!: EntityTable<ReviewRewardReceipt, 'occurrenceId'>;
   reviewOperations!: EntityTable<ReviewOperationReceipt, 'operationId'>;
+  settings!: EntityTable<SettingsRecord, 'key'>;
+  settingsOperations!: EntityTable<SettingsOperation, 'operationId'>;
 
   constructor() {
     super(DB_NAME);
@@ -422,20 +427,90 @@ class CrossDefenseDatabase extends Dexie {
         if ((run.economyRevision ?? 0) !== saved.length || JSON.stringify([...(run.clearedMapIds ?? [])].sort()) !== JSON.stringify(cleared)) throw Error('Version 8 Run and settlements disagree.');
       }
       const next = { ...root, schemaVersion: 9 };
-      WorkspaceMetaSchema.parse(next);
+      z.object({ key: z.literal(WORKSPACE_KEY), schemaVersion: z.literal(9) }).parse(next);
+      await transaction.table('workspace').put(next);
+    });
+
+    // v10 adds Workspace/device preferences and their atomic receipts without rewriting player rows.
+    this.version(10).stores({
+      workspace: 'key', pilots: 'pilotId, lastUsedAt', operations: 'operationId, pilotId',
+      runs: 'runId, &pilotId, contentVersion, rulesetVersion', runOperations: 'operationId, pilotId, runId',
+      salvageOperations: 'operationId, pilotId, runId', buildOperations: 'operationId, pilotId, runId',
+      attemptOperations: 'operationId, pilotId, runId, attemptId', combatOperations: 'operationId, pilotId, runId, attemptId',
+      combatOutcomes: 'attemptId, pilotId, runId', pilotEconomies: 'pilotId',
+      outcomeSettlements: 'attemptId, pilotId, runId', outcomeOperations: 'operationId, pilotId, runId, attemptId',
+      cargoOperations: 'operationId, pilotId, runId', reviewOccurrences: 'occurrenceId, pilotId, entryId, sourceRunId',
+      reviewLinks: 'attemptId, pilotId, runId, occurrenceId', reviewRewards: 'occurrenceId, pilotId, runId, operationId',
+      reviewOperations: 'operationId, pilotId, runId, occurrenceId', settings: 'key', settingsOperations: 'operationId, &revision',
+    }).upgrade(async transaction => {
+      const names = ['workspace', 'pilots', 'runs', 'operations', 'runOperations', 'salvageOperations', 'buildOperations',
+        'attemptOperations', 'combatOperations', 'combatOutcomes', 'pilotEconomies', 'outcomeSettlements',
+        'outcomeOperations', 'cargoOperations', 'reviewOccurrences', 'reviewLinks', 'reviewRewards', 'reviewOperations'];
+      const rows = await Promise.all(names.map(name => transaction.table(name).toArray()));
+      if (!rows.some(values => values.length)) return;
+      const [roots, rawPilots, rawRuns, operations, starts, salvages, builds, attempts, combats, rawOutcomes,
+        rawEconomies, rawSettlements, rawOutcomeOperations, rawCargoOperations, rawOccurrences, rawLinks, rawRewards, rawReviewOperations] = rows;
+      if (roots!.length !== 1) throw Error('Version 9 Workspace root is missing or ambiguous.');
+      const root = z.object({ key: z.literal(WORKSPACE_KEY), schemaVersion: z.literal(9) }).passthrough().parse(roots![0]);
+      const pilots = rawPilots!.map(raw => PilotSchema.parse(raw)), runs = rawRuns!.map(raw => RunSchema.parse(raw));
+      const pilotIds = new Set(pilots.map(pilot => pilot.pilotId)), owners = new Map(runs.map(run => [run.runId, run.pilotId]));
+      if (runs.some(run => !pilotIds.has(run.pilotId))) throw Error('Version 9 Run owner is missing.');
+      for (const raw of operations!) {
+        const receipt = z.object({ operationId: z.string().min(1), pilotId: z.string().min(1), kind: z.literal('create-pilot') }).parse(raw);
+        if (!pilotIds.has(receipt.pilotId)) throw Error('Version 9 Pilot receipt owner is missing.');
+      }
+      for (const [entries, kind, fingerprint] of [[starts!, z.literal('start-run'), false], [salvages!, z.enum(['initialize', 'collect', 'finish']), true], [builds!, z.enum(['place', 'return', 'undo', 'redo']), true]] as const) {
+        for (const raw of entries) {
+          const receipt = z.object({ operationId: z.string().min(1), pilotId: z.string().min(1), runId: z.string().min(1), kind }).parse(raw);
+          if (fingerprint) z.object({ fingerprint: z.string().min(1) }).parse(raw);
+          if (owners.get(receipt.runId) !== receipt.pilotId) throw Error('Version 9 operation owner is inconsistent.');
+        }
+      }
+      for (const raw of attempts!) { const receipt = AttemptReceiptSchema.parse(raw); if (!pilotIds.has(receipt.pilotId) || receipt.runId !== undefined && owners.get(receipt.runId) !== receipt.pilotId) throw Error('Version 9 Attempt receipt owner is inconsistent.'); }
+      for (const raw of combats!) { const receipt = CombatReceiptSchema.parse(raw); if (owners.get(receipt.runId) !== receipt.pilotId) throw Error('Version 9 combat receipt owner is inconsistent.'); }
+      const outcomes = rawOutcomes!.map(raw => CombatOutcomeSchema.parse(raw));
+      for (const outcome of outcomes) { if (owners.get(outcome.runId) !== outcome.pilotId) throw Error('Version 9 outcome owner is inconsistent.'); outcomeFingerprint(outcome); }
+      const economies = rawEconomies!.map(raw => PilotEconomySchema.parse(raw));
+      const settlements = rawSettlements!.map(raw => OutcomeSettlementSchema.parse(raw));
+      const outcomeOperations = rawOutcomeOperations!.map(raw => OutcomeOperationSchema.parse(raw));
+      const cargoOperations = rawCargoOperations!.map(raw => CargoOperationSchema.parse(raw));
+      const occurrences = rawOccurrences!.map(raw => ReviewOccurrenceSchema.parse(raw));
+      const links = rawLinks!.map(raw => ReviewLinkSchema.parse(raw));
+      const rewards = rawRewards!.map(raw => ReviewRewardSchema.parse(raw));
+      const reviewOperations = rawReviewOperations!.map(raw => ReviewOperationSchema.parse(raw));
+      for (const economy of economies) if (!pilotIds.has(economy.pilotId)) throw Error('Version 9 economy owner is missing.');
+      for (const receipt of settlements) { const outcome = outcomes.find(value => value.attemptId === receipt.attemptId); if (!outcome) throw Error('Version 9 settlement source is missing.'); validateSettlement(receipt, outcome); }
+      validateReviewDurability(runs, occurrences, links, rewards, reviewOperations, outcomes, settlements);
+      for (const pilot of pilots) {
+        const economy = economies.find(value => value.pilotId === pilot.pilotId), receipts = settlements.filter(value => value.pilotId === pilot.pilotId);
+        const reviewRewards = rewards.filter(value => value.pilotId === pilot.pilotId);
+        if (!economy && (receipts.length || reviewRewards.length)) throw Error('Version 9 saved economy is missing; do not reset its balance.');
+        assertEconomyLedger(economy ?? emptyEconomy(pilot.pilotId), receipts, reviewRewards);
+      }
+      for (const receipt of outcomeOperations) if (!settlements.some(value => value.attemptId === receipt.attemptId && value.pilotId === receipt.pilotId && value.runId === receipt.runId)) throw Error('Version 9 outcome operation has no settlement.');
+      for (const receipt of cargoOperations) if (owners.get(receipt.runId) !== receipt.pilotId) throw Error('Version 9 Cargo receipt owner is inconsistent.');
+      for (const run of runs) {
+        const cargo = cargoOperations.filter(receipt => receipt.runId === run.runId), saved = settlements.filter(receipt => receipt.runId === run.runId);
+        if ((run.cargo?.revision ?? 0) !== cargo.length || new Set(cargo.map(receipt => receipt.cargoRevision)).size !== cargo.length || cargo.some(receipt => receipt.cargoRevision > cargo.length)) throw Error('Version 9 Cargo and receipts disagree.');
+        const cleared = [...new Set(saved.filter(receipt => outcomes.find(outcome => outcome.attemptId === receipt.attemptId)?.terminal.kind === 'victory').map(receipt => receipt.mapId))].sort();
+        if ((run.economyRevision ?? 0) !== saved.length + rewards.filter(receipt => receipt.runId === run.runId).length ||
+          JSON.stringify([...(run.clearedMapIds ?? [])].sort()) !== JSON.stringify(cleared)) throw Error('Version 9 Run and rewards disagree.');
+      }
+      await transaction.table('settings').add(SettingsRecordSchema.parse({ key: 'settings', revision: 0, settings: DEFAULT_SETTINGS }));
+      const next = { ...root, schemaVersion: 10 }; WorkspaceMetaSchema.parse(next);
       await transaction.table('workspace').put(next);
     });
   }
 }
 
-export class DexieWorkspaceRepository implements WorkspaceRepository, RunRepository, AttemptRepository, CombatRepository, ResultsRepository, ReviewRepository {
+export class DexieWorkspaceRepository implements WorkspaceRepository, RunRepository, AttemptRepository, CombatRepository, ResultsRepository, ReviewRepository, SettingsRepository {
   private readonly db = new CrossDefenseDatabase();
 
   async initialize(): Promise<void> {
     await this.db.open();
     await this.db.transaction(
       'rw',
-      [this.db.workspace, this.db.pilots, this.db.operations, this.db.runs, this.db.runOperations, this.db.salvageOperations, this.db.buildOperations, this.db.attemptOperations, this.db.combatOperations, this.db.combatOutcomes, this.db.pilotEconomies, this.db.outcomeSettlements, this.db.outcomeOperations, this.db.cargoOperations, this.db.reviewOccurrences, this.db.reviewLinks, this.db.reviewRewards, this.db.reviewOperations],
+      [this.db.workspace, this.db.pilots, this.db.operations, this.db.runs, this.db.runOperations, this.db.salvageOperations, this.db.buildOperations, this.db.attemptOperations, this.db.combatOperations, this.db.combatOutcomes, this.db.pilotEconomies, this.db.outcomeSettlements, this.db.outcomeOperations, this.db.cargoOperations, this.db.reviewOccurrences, this.db.reviewLinks, this.db.reviewRewards, this.db.reviewOperations, this.db.settings, this.db.settingsOperations],
       async () => {
         const workspace = await this.db.workspace.get(WORKSPACE_KEY);
         const pilots = await this.db.pilots.toArray();
@@ -455,14 +530,20 @@ export class DexieWorkspaceRepository implements WorkspaceRepository, RunReposit
         const reviewLinks = (await this.db.reviewLinks.toArray()).map(raw => ReviewLinkSchema.parse(raw));
         const reviewRewards = (await this.db.reviewRewards.toArray()).map(raw => ReviewRewardSchema.parse(raw));
         const reviewOperations = (await this.db.reviewOperations.toArray()).map(raw => ReviewOperationSchema.parse(raw));
+        const settingsRows = await this.db.settings.toArray();
+        const settingsReceipts = (await this.db.settingsOperations.toArray()).map(raw => SettingsOperationSchema.parse(raw));
+        if ((await this.db.workspace.count()) > 1) throw Error('Workspace metadata is ambiguous.');
 
         if (!workspace) {
-          if (pilots.length > 0 || runs.length > 0 || operationCount > 0 || runOperationCount > 0 || salvageOperationCount > 0 || buildOperationCount > 0 || attemptReceipts.length > 0 || combatReceipts.length > 0 || combatOutcomes.length > 0 || economies.length > 0 || settlements.length > 0 || outcomeOperations.length > 0 || cargoOperations.length > 0 || reviewOccurrences.length > 0 || reviewLinks.length > 0 || reviewRewards.length > 0 || reviewOperations.length > 0) {
+          if (pilots.length > 0 || runs.length > 0 || operationCount > 0 || runOperationCount > 0 || salvageOperationCount > 0 || buildOperationCount > 0 || attemptReceipts.length > 0 || combatReceipts.length > 0 || combatOutcomes.length > 0 || economies.length > 0 || settlements.length > 0 || outcomeOperations.length > 0 || cargoOperations.length > 0 || reviewOccurrences.length > 0 || reviewLinks.length > 0 || reviewRewards.length > 0 || reviewOperations.length > 0 || settingsRows.length > 0 || settingsReceipts.length > 0) {
             throw new Error('Workspace metadata is missing while durable player data exists.');
           }
           await this.db.workspace.add({ key: WORKSPACE_KEY, schemaVersion: CURRENT_SCHEMA_VERSION });
+          await this.db.settings.add(SettingsRecordSchema.parse({ key: 'settings', revision: 0, settings: DEFAULT_SETTINGS }));
         } else {
           WorkspaceMetaSchema.parse(workspace);
+          if (settingsRows.length !== 1) throw Error('Saved Workspace settings are missing or ambiguous.');
+          validateSettingsHistory(SettingsRecordSchema.parse(settingsRows[0]), settingsReceipts);
         }
 
         for (const pilot of pilots) {
@@ -501,6 +582,37 @@ export class DexieWorkspaceRepository implements WorkspaceRepository, RunReposit
         }
       },
     );
+  }
+
+  private async settingsState(): Promise<SettingsState> {
+    WorkspaceMetaSchema.parse(await this.db.workspace.get(WORKSPACE_KEY));
+    const rows = await this.db.settings.toArray();
+    if (rows.length !== 1) throw Error('Saved Workspace settings are missing or ambiguous.');
+    const record = SettingsRecordSchema.parse(rows[0]);
+    const receipts = (await this.db.settingsOperations.toArray()).map(raw => SettingsOperationSchema.parse(raw));
+    validateSettingsHistory(record, receipts);
+    return { revision: record.revision, settings: record.settings };
+  }
+
+  async getSettings(): Promise<SettingsState> {
+    return this.db.transaction('r', [this.db.workspace, this.db.settings, this.db.settingsOperations], () => this.settingsState());
+  }
+
+  async saveSettings(command: SaveSettingsCommand): Promise<SettingsState> {
+    const input = validatedSettingsCommand(command), fingerprint = settingsCommandFingerprint(input);
+    return this.db.transaction('rw', [this.db.workspace, this.db.settings, this.db.settingsOperations], async () => {
+      const state = await this.settingsState(), raw = await this.db.settingsOperations.get(input.operationId);
+      if (raw) {
+        const receipt = SettingsOperationSchema.parse(raw);
+        if (receipt.fingerprint !== fingerprint) throw new SettingsRejection('OPERATION_CONFLICT', 'This Settings operation ID was used for another change.');
+        return state;
+      }
+      if (input.expectedRevision !== state.revision) throw new SettingsRejection('STALE_SETTINGS', 'Settings changed. Reopen Settings before saving again.');
+      const next = { revision: state.revision + 1, settings: validateSettingsForSave(input.settings) };
+      await this.db.settings.put(SettingsRecordSchema.parse({ key: 'settings', ...next }));
+      await this.db.settingsOperations.add(SettingsOperationSchema.parse({ operationId: input.operationId, fingerprint, revision: next.revision }));
+      return structuredClone(next);
+    });
   }
 
   async listPilots(): Promise<PilotProfile[]> {

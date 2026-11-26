@@ -45,4 +45,5 @@
   .pr-layout { grid-template-columns: 1fr; }
   .pr-game { display: none; }
 }
+html[data-reduced-motion="true"] .pr-clear-row { background: transparent; border: 2px solid #8de3cd; opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .pr-clear-row { background: transparent; border: 2px solid #8de3cd; opacity: 1; } }

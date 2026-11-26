@@ -3,7 +3,7 @@ import {seedOutcomeSave,inspectResultsSave} from '../resultsBrowserFixture';
 
 test('v7 to v8 preserves every old row and pending reward while adding empty settlement/Cargo stores',async({page})=>{
   await seedOutcomeSave(page);const before=await inspectResultsSave(page);await page.goto('/');await expect(page.getByRole('heading',{name:'Pilot chooser',exact:true})).toBeVisible();
-  const after=await inspectResultsSave(page);expect(after.version).toBe(90);expect(after.tables.workspace).toEqual([{key:'workspace',schemaVersion:9}]);
+  const after=await inspectResultsSave(page);expect(after.version).toBe(100);expect(after.tables.workspace).toEqual([{key:'workspace',schemaVersion:10}]);
   for(const name of Object.keys(before.tables).filter(name=>name!=='workspace'))expect(after.tables[name]).toEqual(before.tables[name]);
   for(const name of ['pilotEconomies','outcomeSettlements','outcomeOperations','cargoOperations'])expect(after.tables[name]).toEqual([]);
 });

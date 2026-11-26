@@ -54,7 +54,7 @@ test('v2 -> current schema is additive and preserves the pinned Run and original
   expect(after.tables.runs).toEqual(before.tables.runs);
   expect(after.tables.runOperations).toEqual(before.tables.runOperations);
   expect(after.tables.pilots).toEqual(before.tables.pilots);
-  expect(after.tables.workspace).toEqual([{ key: 'workspace', schemaVersion: 9 }]);
+  expect(after.tables.workspace).toEqual([{ key: 'workspace', schemaVersion: 10 }]);
   expect(after.tables.salvageOperations).toEqual([]);
   await page.getByTestId('pilot-card').getByRole('button', { name: 'Continue', exact: true }).click();
   await expect(page.getByTestId('run-id')).toHaveText('legacy-run');
