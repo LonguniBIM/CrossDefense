@@ -24,8 +24,8 @@ test('v3 to current schema preserves all existing Run pins, quota, collected ent
   const before = await inspect(page);
   await page.goto('/'); await expect(page.getByRole('heading', { name: 'Pilot chooser', exact: true })).toBeVisible();
   const after = await inspect(page);
-  expect(after.version).toBe(90);
-  expect(after.tables.workspace).toEqual([{ key: 'workspace', schemaVersion: 9 }]);
+  expect(after.version).toBe(100);
+  expect(after.tables.workspace).toEqual([{ key: 'workspace', schemaVersion: 10 }]);
   expect(after.stores).toContain('buildOperations');
   expect(after.tables.buildOperations).toEqual([]);
   for (const name of before.stores.filter(name => name !== 'workspace')) expect(after.tables[name]).toEqual(before.tables[name]);

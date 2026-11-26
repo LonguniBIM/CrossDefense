@@ -49,8 +49,8 @@ test('v4 to current schema preserves exact layout, content pins, quota, retained
   await seedV4(page); const before = await inspect(page);
   await page.goto('/'); await expect(page.getByRole('heading', { name: 'Pilot chooser', exact: true })).toBeVisible();
   const after = await inspect(page);
-  expect(after.version).toBe(90);
-  expect(after.tables.workspace).toEqual([{ key: 'workspace', schemaVersion: 9 }]);
+  expect(after.version).toBe(100);
+  expect(after.tables.workspace).toEqual([{ key: 'workspace', schemaVersion: 10 }]);
   for (const name of Object.keys(before.tables).filter(name => name !== 'workspace')) expect(after.tables[name]).toEqual(before.tables[name]);
 });
 

@@ -1,3 +1,6 @@
+import { WorkspaceSettingsView } from './presentation/SettingsView';
+import { applyPresentationSettings } from './presentation/PresentationPreferences';
+import { SettingsApplication } from './application/workspace/SettingsApplication';
 import { ResultsApplication } from './application/results/ResultsApplication';
 import { ReviewApplication } from './application/review/ReviewApplication';
 import { mountReview } from './presentation/ReviewView';
@@ -45,6 +48,8 @@ if (!appRoot) {
   throw new Error('Application root is missing.');
 }
 const root: HTMLElement = appRoot;
+let settingsApplication: SettingsApplication | null = null;
+const settingsView = new WorkspaceSettingsView(() => settingsApplication);
 
 const lock = new WorkspaceWriteLock(crypto.randomUUID());
 let ownsWorkspace = false;
@@ -62,6 +67,7 @@ let contentCandidateMessage: string | null = null;
 const pendingStartRequests = new Map<string, StartRunRequest>();
 
 function page(content: string): void {
+  settingsView.dismiss();
   stopReview?.(); stopReview = null;
   stopResults?.(); stopResults=null;
   stopAttempt?.(); stopAttempt=null;
@@ -71,6 +77,7 @@ function page(content: string): void {
   stopPreRun = null;
   screenEpoch += 1;
   root.innerHTML = `<div class="shell"><section class="panel">${content}</section></div>`;
+  settingsView.attach(root);
 }
 
 function renderLoading(message: string): void {
@@ -272,7 +279,7 @@ async function enterSalvage(pilot: PilotProfile): Promise<void> {
     if (epoch !== screenEpoch) return;
     stopPreRun = mountPreRun(root, preRun,
       async () => { if (application) renderChooser(await application.getPilotChooser()); },
-      async () => { await renderPilotRun(pilot); });
+      async () => { await renderPilotRun(pilot); }, settingsView);
   } catch (error) {
     if (epoch === screenEpoch) renderRecovery(error instanceof Error ? error.message : String(error));
   }
@@ -330,11 +337,13 @@ async function showBuild(pilot:PilotProfile,build:BuildApplication): Promise<voi
       stopAttempt=mountMapSelection(root,attempts,selection,{back:async()=>showBuild(pilot,build),started:async run=>{
         if(run.phase==='attempt') showDiagnostic(pilot,run,attempts); else await enterBuild(pilot);
       }});
+      settingsView.attach(root);
     } catch(error) {
       // The previous Build view is already disposed; the new screen owns this failure.
       if(epoch===screenEpoch) renderRecovery(error instanceof Error?error.message:String(error));
     }
   },{open:async()=>enterResults(pilot),salvage:async()=>enterPostSalvage(pilot),credits:results.economy.credits,celestium:results.economy.celestium,unsettled:results.outcomes.filter(row=>!row.settlement).length,lastSettled:results.outcomes.some(row=>row.outcome.attemptId===results.run.attempt?.attemptId&&!!row.settlement)}, pack?.review ? { dueCount, open: async()=>enterReview(pilot) } : undefined);
+  settingsView.attach(root);
 }
 function renderReviewRecovery(pilot: PilotProfile, build: BuildApplication, review: ReviewApplication, error: unknown): void {
   page(`<h1>Review recovery</h1><p class="error" data-testid="review-recovery-error">${escapeHtml(error instanceof Error ? error.message : String(error))}</p>
@@ -367,7 +376,7 @@ async function enterCombat(pilot:PilotProfile,run:ActiveRun):Promise<void>{
     const pack=hasRenderAssets(run.contentVersion)?await contentApplication?.getPack(run.contentVersion,run.rulesetVersion):undefined;
     if(epoch!==screenEpoch)return;
     if(hasRenderAssets(run.contentVersion)&&(!pack||pack.integrity.manifestSha256!==run.attempt.startup.contentDigest))throw Error('The acknowledged Attempt requires its exact pinned render pack.');
-    stopAttempt=mountCombat(root,combat,async()=>enterBuild(pilot),pack??undefined,async()=>enterResults(pilot,run.attempt!.attemptId));
+    stopAttempt=mountCombat(root,combat,async()=>enterBuild(pilot),pack??undefined,async()=>enterResults(pilot,run.attempt!.attemptId),settingsView);
   }catch(error){if(epoch===screenEpoch)renderRecovery(error instanceof Error?error.message:String(error));}
 }
 function showDiagnostic(pilot:PilotProfile,run:ActiveRun,attempts?:AttemptApplication): void {
@@ -376,6 +385,7 @@ function showDiagnostic(pilot:PilotProfile,run:ActiveRun,attempts?:AttemptApplic
   page('');
   const app=attempts??new AttemptApplication(workspaceRepository,contentApplication,()=>crypto.randomUUID());
   stopAttempt=mountAttemptDiagnostic(root,app,run,async()=>enterBuild(pilot));
+  settingsView.attach(root);
 }
 
 
@@ -390,11 +400,13 @@ async function enterResults(pilot:PilotProfile,attemptId?:string):Promise<void>{
     const review = pack?.review ? new ReviewApplication(workspaceRepository, contentApplication, ()=>crypto.randomUUID()) : null;
     stopResults=mountResults(root,results,{back:async()=>enterBuild(pilot),salvage:async()=>enterPostSalvage(pilot),
       ...(review ? { review: { app: review, open: async()=>showReview(pilot, review) } } : {})},attemptId,pack??undefined);
+    settingsView.attach(root);
   }catch(error){if(epoch===screenEpoch)renderRecovery(error instanceof Error?error.message:String(error));}
 }
 function showReview(pilot: PilotProfile, review: ReviewApplication): void {
   page('');
   stopReview = mountReview(root, review, async()=>enterBuild(pilot));
+  settingsView.attach(root);
 }
 async function enterReview(pilot: PilotProfile): Promise<void> {
   if (!workspaceRepository || !contentApplication) { renderRecovery('Review storage is not ready.'); return; }
@@ -412,6 +424,7 @@ async function enterPostSalvage(pilot:PilotProfile):Promise<void>{
     const salvage=new SalvageApplication(workspaceRepository,contentApplication,()=>crypto.randomUUID());
     await salvage.open(pilot.pilotId);if(epoch!==screenEpoch)return;
     stopResults=mountSalvage(root,salvage,{back:async()=>enterBuild(pilot),applied:async()=>enterBuild(pilot)});
+    settingsView.attach(root);
   }catch(error){if(epoch===screenEpoch)renderRecovery(error instanceof Error?error.message:String(error));}
 }
 
@@ -557,10 +570,15 @@ async function bootstrap(): Promise<void> {
       ownsWorkspace = true;
     }
 
-    const repository = new DexieWorkspaceRepository();
+    const repository = workspaceRepository ?? new DexieWorkspaceRepository();
     workspaceRepository = repository;
     application = new WorkspaceApplication(repository, () => crypto.randomUUID());
     const chooser = await application.bootstrap();
+    // A Settings modal may outlive asynchronous recovery; retain its operation owner.
+    settingsApplication ??= new SettingsApplication(repository, () => crypto.randomUUID());
+    applyPresentationSettings(settingsApplication.hasPendingSave()
+      ? settingsApplication.projection()
+      : await settingsApplication.open());
 
     const contentRepository = new LocalStorageContentPackRepository();
     contentApplication = new ContentPackApplication(contentRepository, {

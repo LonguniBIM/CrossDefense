@@ -50,8 +50,8 @@ test('v6 to v7 preserves every prior row while adding empty combat receipts and 
   await seedV6(page); const before = await inspect(page);
   await page.goto('/'); await expect(page.getByRole('heading', { name: 'Pilot chooser', exact: true })).toBeVisible();
   const after = await inspect(page);
-  expect(after.version).toBe(90);
-  expect(after.tables.workspace).toEqual([{ key: 'workspace', schemaVersion: 9 }]);
+  expect(after.version).toBe(100);
+  expect(after.tables.workspace).toEqual([{ key: 'workspace', schemaVersion: 10 }]);
   expect(after.tables.combatOperations).toEqual([]); expect(after.tables.combatOutcomes).toEqual([]);
   for (const name of Object.keys(before.tables).filter(name => name !== 'workspace')) expect(after.tables[name]).toEqual(before.tables[name]);
 });

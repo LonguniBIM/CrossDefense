@@ -17,6 +17,7 @@ export function mountReview(root: HTMLElement, app: ReviewApplication, leave: ()
       <p data-testid="review-saving" role="status"></p><p id="review-feedback" data-testid="review-feedback" role="status"></p><p id="review-error" class="error" data-testid="review-error" role="alert" hidden></p>
       <section class="rv-completed" data-testid="review-completed" hidden><h3>Review complete</h3><p data-testid="review-reward"></p><p data-testid="review-reward-detail"></p><p class="muted">This occurrence is saved. Returning to it does not grant another reward.</p></section>
     </section><aside class="rv-card"><h2>Optional help</h2><p class="muted">Each requested hint is saved. Hints keep the completion Credit available, but remove the independent first-response bonus.</p>
+      <button type="button" class="secondary" data-testid="request-pronunciation">Play pronunciation</button><p class="muted" data-testid="pronunciation-feedback" role="status"></p>
       <div class="rv-hint-actions"><button class="secondary" data-testid="review-hint-context">Context hint</button><button class="secondary" data-testid="review-hint-letter">Letter hint</button><button class="secondary" data-testid="review-hint-reveal">Reveal answer</button></div>
       <div class="rv-hints" data-testid="review-hints" aria-live="polite"></div>
       <h3>Your saved practice</h3><p>Submitted responses: <strong data-testid="review-response-count"></strong></p><p data-testid="review-first-response"></p><p data-testid="review-attempts"></p>
@@ -37,6 +38,7 @@ export function mountReview(root: HTMLElement, app: ReviewApplication, leave: ()
     get('review-celestium').textContent = String(state.economy.celestium);
     get('review-prompt').textContent = entry?.prompt ?? 'There is no due Review to answer.';
     answer.disabled = blocked() || complete || !entry;
+    get<HTMLButtonElement>('request-pronunciation').disabled = blocked() || !entry;
     get<HTMLButtonElement>('review-submit').disabled = answer.disabled;
     get<HTMLButtonElement>('review-leave').disabled = blocked();
     get<HTMLButtonElement>('review-retry').hidden = !app.hasPendingSave();
@@ -95,6 +97,10 @@ export function mountReview(root: HTMLElement, app: ReviewApplication, leave: ()
     }
   }
   get<HTMLFormElement>('review-form').addEventListener('submit', event => { event.preventDefault(); if (!blocked()) void save('submit'); }, { signal: controller.signal });
+  get('request-pronunciation').addEventListener('click', () => {
+    // Q15 contains no audio asset. This presentation-only request never submits a hint or response.
+    get('pronunciation-feedback').textContent = 'Pronunciation audio is unavailable for this word. You can continue Review using the meaning and text.';
+  }, { signal: controller.signal });
   get('review-retry').addEventListener('click', () => void save('retry'), { signal: controller.signal });
   for (const hint of ['context', 'letter', 'reveal'] as const) get('review-hint-' + hint).addEventListener('click', () => {
     if (!blocked()) void save('hint', hint);

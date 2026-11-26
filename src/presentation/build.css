@@ -47,6 +47,7 @@
 .bu-shell button:focus-visible { outline: 3px solid #9ed6ff; outline-offset: 3px; }
 .bu-shell button:disabled { cursor: default; opacity: .6; }
 @media (max-width: 1050px) { .bu-layout { grid-template-columns: minmax(160px, .7fr) minmax(360px, 1.3fr); height: auto; grid-template-rows: auto; } .bu-cargo { grid-row: 1 / 4; } .bu-inspector { grid-column: 2; grid-row: 3; } .bu-words { grid-column: 2; grid-row: 4; } }
+html[data-reduced-motion="true"] .bu-shell *, html[data-reduced-motion="true"] .bu-shell *::before, html[data-reduced-motion="true"] .bu-shell *::after { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) { .bu-shell *, .bu-shell *::before, .bu-shell *::after { animation: none !important; transition: none !important; } }
 
 .bu-history { display: flex; align-items: center; gap: 8px; }

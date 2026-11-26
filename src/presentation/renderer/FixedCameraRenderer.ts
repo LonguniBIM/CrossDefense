@@ -6,11 +6,13 @@ import { isWeapon, weaponRule } from '../../domain/combat/rules';
 import { RenderResources } from './RenderResources';
 import { loadRenderAssets, type LoadedRenderAssets } from './RenderAssetLoader';
 import { createArt } from './EquipmentArt';
+import { prefersReducedMotion } from '../PresentationPreferences';
 
 const COLORS: Readonly<Record<string,string>> = {Ballistic:'#ffd16d',Missile:'#ff946d',Laser:'#61f0ea',Armor:'#a7d0f0',Shield:'#66c9ff',System:'#bda0ff',Engine:'#ffbf72',Power:'#8befe0',Support:'#fbaacb'};
 type ModuleArt = ReturnType<ReturnType<typeof createArt>['module']>;
 interface Fleet { root:THREE.Group; shield:THREE.Mesh<THREE.BufferGeometry,THREE.ShaderMaterial>; scope:RenderResources; modules:Map<string,ModuleArt>; }
 interface Callbacks { lost():void; restored():void; failed(error:unknown):void; }
+interface StaticEffectCue { id:string; kind:'fire'|'hit'|'repair'|'shield-regen'; }
 const center = (id:string) => id==='player'?-4.1:4.1;
 const facing = (id:string) => id==='player'?1:-1;
 const point = (id:string,x=2,y=2,z=.32) => new THREE.Vector3(center(id)+(x-2)*.7,(2-y)*.7,z);
@@ -103,13 +105,14 @@ export class FixedCameraRenderer {
       this.scene.remove(root);scope.dispose();this.retiredCreated+=scope.created;this.retiredReleased+=scope.released;throw error;
     }
   }
-  private particle(map:string,position:THREE.Vector3,size:number,color:string,opacity:number,rotation=0):void {
+  private particle(map:string,position:THREE.Vector3,size:number,color:string,opacity:number,rotation=0,staticCue:StaticEffectCue|null=null):void {
     if(this.used>=96||opacity<=0)return;
     const texture=this.loaded!.textures.get(map);if(!texture)return;
     let sprite=this.sprites[this.used++];
     if(!sprite){const material=this.shared.own(new THREE.SpriteMaterial({transparent:true,depthWrite:false,toneMapped:false,blending:THREE.AdditiveBlending}));sprite=new THREE.Sprite(material);this.scene.add(sprite);this.sprites.push(sprite);}
     if(sprite.material.map!==texture){sprite.material.map=texture;sprite.material.needsUpdate=true;}
     sprite.material.color.set(color);sprite.material.opacity=opacity;sprite.material.rotation=rotation;sprite.position.copy(position);sprite.scale.set(size,size,1);sprite.visible=true;
+    sprite.userData.staticCue=staticCue;
   }
   private beam(a:THREE.Vector3,b:THREE.Vector3,width:number,color:string):void {
     if(this.lineCount>=52)return;
@@ -132,7 +135,8 @@ export class FixedCameraRenderer {
   render(view:CombatProjection):void {
     if(!this.available)return;
     const started=performance.now();this.projection=view;
-    const battle=view.simulation.battle,tick=battle.tick,reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const battle=view.simulation.battle,tick=battle.tick,reduced=prefersReducedMotion();
+    this.host.dataset.reducedMotion=String(reduced);
     const ships=[battle.player,...(battle.enemy?[battle.enemy]:[])];
     for(const id of [...this.fleets.keys()])if(!ships.some(s=>s.id===id))this.removeFleet(id);
     this.used=0;this.lineCount=0;this.missileCount=0;
@@ -141,7 +145,8 @@ export class FixedCameraRenderer {
       const recent=view.recentEvents.filter(e=>e.event.kind==='hit'&&e.event.target===ship.id&&(e.event.shieldLoss??0)>0).at(-1);
       fleet.shield.visible=ship.shield>0;
       fleet.shield.material.uniforms.power!.value=ship.shield>0?.7:0;
-      fleet.shield.material.uniforms.age!.value=recent?(tick-recent.tick)/60:10;
+      // A steady Shield shell remains factual; reduced motion omits its decorative hit ripple.
+      fleet.shield.material.uniforms.age!.value=!reduced&&recent?(tick-recent.tick)/60:10;
       fleet.shield.material.uniforms.hit!.value.set(-facing(ship.id),0,.25);
       for(const module of ship.modules){
         const art=fleet.modules.get(module.id)!;
@@ -166,20 +171,28 @@ export class FixedCameraRenderer {
       if(age<0)continue;
       if(event.kind==='fire'&&event.weapon!=='Laser'&&event.x!==undefined&&event.y!==undefined){
         const a=point(event.source,event.x,event.y),b=impact(event.target);
-        if(age<6)this.particle('muzzle_01',a,reduced?.25:.6,'#ffe0a0',1-age/6);
-        if(event.due!==undefined&&tick<event.due&&ships.some(s=>s.id===event.target&&s.hull>0)){
-          const fraction=age/(event.due-observation.tick),position=a.clone().lerp(b,fraction);
-          if(event.weapon==='Missile')this.missile(position,Math.atan2(b.y-a.y,b.x-a.x));
-          this.particle(event.weapon==='Missile'?'flame_01':'trace_01',position,event.weapon==='Missile'?.42:.3,event.weapon==='Missile'?'#ffb96c':'#fff0aa',1,Math.atan2(b.y-a.y,b.x-a.x));
-          if(!reduced&&event.weapon==='Missile')for(let i=1;i<=3;i++)this.particle('smoke',a.clone().lerp(b,Math.max(0,fraction-i*.035)),.12+i*.035,'#b5c6d6',.2/i);
+        if(reduced){
+          // A fixed marker identifies an actual firing module without depicting projectile travel.
+          if(age<6||(event.due!==undefined&&tick<event.due&&ships.some(s=>s.id===event.target&&s.hull>0))){
+            this.particle(event.weapon==='Missile'?'flame_01':'muzzle_01',a,event.weapon==='Missile'?.3:.25,
+              event.weapon==='Missile'?'#ffb96c':'#ffe0a0',.7,0,{id:observation.id,kind:'fire'});
+          }
+        }else{
+          if(age<6)this.particle('muzzle_01',a,.6,'#ffe0a0',1-age/6);
+          if(event.due!==undefined&&tick<event.due&&ships.some(s=>s.id===event.target&&s.hull>0)){
+            const fraction=age/(event.due-observation.tick),position=a.clone().lerp(b,fraction);
+            if(event.weapon==='Missile')this.missile(position,Math.atan2(b.y-a.y,b.x-a.x));
+            this.particle(event.weapon==='Missile'?'flame_01':'trace_01',position,event.weapon==='Missile'?.42:.3,event.weapon==='Missile'?'#ffb96c':'#fff0aa',1,Math.atan2(b.y-a.y,b.x-a.x));
+            if(event.weapon==='Missile')for(let i=1;i<=3;i++)this.particle('smoke',a.clone().lerp(b,Math.max(0,fraction-i*.035)),.12+i*.035,'#b5c6d6',.2/i);
+          }
         }
       }
       if(event.kind==='hit'&&age<18&&((event.shieldLoss??0)+(event.hullLoss??0))>0){
         const shielded=(event.shieldLoss??0)>0,color=shielded?'#7be4ff':event.weapon==='Missile'?'#ffb46d':'#ffe3a0';
-        this.particle('flare_01',impact(event.target),reduced?.32:event.weapon==='Missile'?1.1:.6,color,(1-age/18)*.7);
+        this.particle('flare_01',impact(event.target),reduced?.32:event.weapon==='Missile'?1.1:.6,color,reduced?.7:(1-age/18)*.7,0,reduced?{id:observation.id,kind:'hit'}:null);
         if(!reduced)this.particle(shielded?'circle_03':'spark_05',impact(event.target),.3+age*.06,color,(1-age/18)*.45);
       }
-      if((event.kind==='repair'||event.kind==='shield-regen')&&age<24)this.particle('circle_03',point(event.target,event.x??2,event.y??2),reduced?.5:1+age*.03,event.kind==='repair'?'#a9f6ba':'#80cfff',(1-age/24)*.45);
+      if((event.kind==='repair'||event.kind==='shield-regen')&&age<24)this.particle('circle_03',point(event.target,event.x??2,event.y??2),reduced?.5:1+age*.03,event.kind==='repair'?'#a9f6ba':'#80cfff',reduced?.45:(1-age/24)*.45,0,reduced?{id:observation.id,kind:event.kind}:null);
     }
     for(let i=this.used;i<this.sprites.length;i++)this.sprites[i]!.visible=false;
     for(let i=this.lineCount;i<this.lines.length;i++)this.lines[i]!.visible=false;
@@ -194,8 +207,14 @@ export class FixedCameraRenderer {
       return {ship:ship.id,id:m.id,x:m.x,y:m.y,letter:m.letter,subtype:m.subtype,position:object.position.toArray(),meshCount};
     })));
     // Diagnostics describe actual allocated objects, not merely the source observations.
+    const visibleSprites=this.sprites.filter(object=>object.visible);
+    const textureName=(object:THREE.Sprite)=>[...this.loaded!.textures].find(([,texture])=>texture===object.material.map)?.[0]??'unknown';
     this.host.dataset.renderedEffects=JSON.stringify({activeBeams:this.lines.filter(object=>object.visible).length,activeMissiles:this.missiles.filter(object=>object.visible).length,
-      particles:this.sprites.filter(object=>object.visible).map(object=>[...this.loaded!.textures].find(([,texture])=>texture===object.material.map)?.[0]??'unknown')});
+      particles:visibleSprites.map(textureName),
+      staticCues:visibleSprites.filter(object=>object.userData.staticCue).map(object=>({
+        ...(object.userData.staticCue as StaticEffectCue),texture:textureName(object),
+        position:object.position.toArray(),size:object.scale.x,opacity:object.material.opacity,
+      }))});
     this.host.dataset.observedEvents=JSON.stringify(view.recentEvents.map(e=>({id:e.id,tick:e.tick,kind:e.event.kind,weapon:e.event.weapon,shieldLoss:e.event.shieldLoss,hullLoss:e.event.hullLoss})));
   }
   diagnostics():Record<string,unknown> {

@@ -112,6 +112,8 @@ export class CombatApplication {
     if(!Number.isFinite(elapsed)||elapsed<0)throw Error('Frame elapsed time must be finite and nonnegative.');
     if(this.resumeRemaining!==null){
       this.resumeRemaining=Math.max(0,this.resumeRemaining-elapsed);
+      // Fractional RAF timestamps must not leave a sub-nanosecond extra countdown frame.
+      if(this.resumeRemaining<1e-7)this.resumeRemaining=0;
       if(this.resumeRemaining===0){this.resumeRemaining=null;this.pauseReason=null;this.clearInput();}
       this.accumulator=0;return {projection:this.projection(),resetClock:this.resumeRemaining===null};
     }

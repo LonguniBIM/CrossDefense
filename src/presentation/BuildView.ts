@@ -68,7 +68,8 @@ export function mountBuild(root: HTMLElement, app: BuildApplication, onBack: () 
   }
 
   function updateControls(): void {
-    for (const button of root.querySelectorAll<HTMLButtonElement>('button')) button.disabled = blocked();
+    // Feature save locks do not own the shared Workspace Settings launcher.
+    for (const button of root.querySelectorAll<HTMLButtonElement>('button:not(.st-launcher)')) button.disabled = blocked();
     element<HTMLButtonElement>('retry-placement').hidden = !app.hasPendingSave();
     element<HTMLButtonElement>('retry-placement').disabled = busy;
     element<HTMLButtonElement>('choose-map').hidden = !onChooseMap;

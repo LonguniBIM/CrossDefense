@@ -1,12 +1,10 @@
 import './preRun.css';
 import { MODULE_SUBTYPES } from '../domain/content/contentPack';
-import { canonicalPiece, ghostCells, type BoardCell, type BoardInput, type BoardAction, type Piece } from '../domain/preRun/board';
+import { canonicalPiece, ghostCells, type BoardCell, type BoardInput, type Piece } from '../domain/preRun/board';
+import type { SettingsAccess } from './SettingsView';
+import { controlsText, GameplayKeyboard } from './GameplayInput';
 import type { PreRunApplication, PreRunProjection } from '../application/preRun/PreRunApplication';
 
-const KEYS: Readonly<Record<string, BoardAction>> = {
-  ArrowLeft: 'left', ArrowRight: 'right', ArrowDown: 'down', ArrowUp: 'cw', KeyX: 'cw',
-  KeyZ: 'ccw', Space: 'drop', KeyC: 'hold', ShiftLeft: 'hold', ShiftRight: 'hold',
-};
 const ABBREVIATIONS: Readonly<Record<string, string>> = {
   Ballistic: 'BAL', Missile: 'MIS', Laser: 'LAS', Armor: 'ARM', Shield: 'SHD',
   System: 'SYS', Engine: 'ENG', Power: 'PWR', Support: 'SUP',
@@ -19,6 +17,7 @@ export function mountPreRun(
   application: PreRunApplication,
   onExit: () => Promise<void>,
   onComplete: () => Promise<void>,
+  settings?: SettingsAccess,
 ): () => void {
   root.innerHTML = `<main class="pr-shell"><section class="pr-panel">
     <header class="pr-header"><h1>Pre-Run Salvage</h1><span>Enemy-free collection</span></header>
@@ -48,8 +47,9 @@ export function mountPreRun(
   let lastTimestamp: number | null = null;
   let accumulator = 0;
   let pauseReason: string | null = safeViewport() && !document.hidden ? null : 'Paused: window too small or hidden.';
-  let resumeAt: number | null = null;
+  let resumeRemaining: number | null = null;
   let inputs: BoardInput[] = [];
+  const keyboard = new GameplayKeyboard(input => inputs.push(input), () => pause('Paused. Resume when ready.'));
   let view = application.projection();
   let clearEffect: { tick: number; rows: number[] } | null = null;
 
@@ -84,6 +84,7 @@ export function mountPreRun(
   function render(): void {
     if (!live) return;
     view = application.projection();
+    root.querySelector<HTMLElement>('.pr-controls')!.textContent = controlsText(settings?.current()) + ' Reward-free pieces remain available when all remaining payloads are on the board, in Hold or in Next.';
     element('salvage-objective').textContent = `Build the starter word ${view.run.starterObjective.targetWord}`;
     element('salvage-run-id').textContent = view.run.runId;
     element('salvage-content').textContent = view.run.contentVersion;
@@ -92,13 +93,13 @@ export function mountPreRun(
     element('collected-total').textContent = String(view.collected.length);
     element('salvage-status').textContent = ({ playing: 'Clear payload cells to collect tiles.', pending: 'Saving collection. Simulation is stopped.', 'save-failed': 'Save failed. Retry the same operation.', 'top-out': 'Top-out. Committed collection is preserved.', exhausted: 'Collection quota exhausted. Your starter is ready.', complete: 'Starter saved. Ready for Build.' })[view.status];
     element('pause-message').hidden = !pauseReason;
-    element('pause-message').textContent = resumeAt === null ? pauseReason ?? '' : `Paused - resuming in ${Math.max(1, Math.ceil((resumeAt - (lastTimestamp ?? 0)) / 1000))}...`;
+    element('pause-message').textContent = resumeRemaining === null ? pauseReason ?? '' : `Paused - resuming in ${Math.max(1, Math.ceil((resumeRemaining - 1e-7) / 1000))}...`;
     element('salvage-error').hidden = !view.error;
     element('salvage-error').textContent = view.error;
     const blocked = busy || view.status === 'pending' || view.status === 'save-failed';
     element<HTMLButtonElement>('pause-salvage').disabled = blocked || view.status !== 'playing' || !!pauseReason;
     element<HTMLButtonElement>('resume-salvage').hidden = !pauseReason;
-    element<HTMLButtonElement>('resume-salvage').disabled = !safeViewport() || document.hidden || resumeAt !== null || blocked;
+    element<HTMLButtonElement>('resume-salvage').disabled = !safeViewport() || document.hidden || resumeRemaining !== null || blocked;
     element<HTMLButtonElement>('retry-collection').hidden = view.status !== 'save-failed';
     element<HTMLButtonElement>('retry-collection').disabled = busy;
     element<HTMLButtonElement>('reset-salvage').hidden = view.status !== 'top-out';
@@ -133,17 +134,16 @@ export function mountPreRun(
     if (view.events?.rows.length) clearEffect = { tick: board.tick, rows: view.events.rows };
     element('clear-effect').replaceChildren(...(clearEffect && board.tick >= clearEffect.tick && board.tick - clearEffect.tick < 10 ? clearEffect.rows.map(row => { const node = document.createElement('span'); node.className = 'pr-clear-row'; node.style.setProperty('--y', String(row)); return node; }) : []));
   }
+  function clearInput(): void {
+    inputs = []; keyboard.clear(); application.clearInput();
+  }
   function pause(reason: string): void {
-    pauseReason = reason; resumeAt = null; accumulator = 0; inputs = []; application.clearInput(); render();
+    pauseReason = reason; resumeRemaining = null; lastTimestamp = null; accumulator = 0; clearInput(); render();
   }
   const onKey = (event: KeyboardEvent): void => {
-    if (event.target instanceof HTMLElement && (event.target.matches('input,textarea,select') || event.target.isContentEditable)) return;
-    if (event.code === 'Escape' && event.type === 'keydown' && !event.repeat) { event.preventDefault(); pause('Paused. Resume when ready.'); return; }
-    const action = KEYS[event.code];
-    if (!action || event.repeat || pauseReason || busy || application.projection().status !== 'playing') return;
-    if (event.target instanceof HTMLElement && event.target.closest('button')) return;
-    event.preventDefault();
-    inputs.push({ action, down: event.type === 'keydown', code: event.code, pieceId: view.board!.active.id });
+    const current = application.projection();
+    keyboard.handle(event, { bindings: settings?.current().bindings,
+      pieceId: !pauseReason && !busy && current.status === 'playing' ? current.board!.active.id : null });
   };
   const onBlur = () => pause('Paused because the game lost focus.');
   const onVisibility = () => { if (document.hidden) pause('Paused because the tab is hidden.'); };
@@ -151,7 +151,7 @@ export function mountPreRun(
 
   async function runAction(action: () => PreRunProjection | Promise<PreRunProjection>): Promise<void> {
     if (busy) return;
-    busy = true; inputs = []; application.clearInput();
+    busy = true; clearInput();
     try {
       const result = action(); render();
       const updated = await result;
@@ -163,12 +163,12 @@ export function mountPreRun(
   }
   element('pause-salvage').addEventListener('click', () => pause('Paused. Resume when ready.'));
   element('resume-salvage').addEventListener('click', () => {
-    if (!safeViewport() || document.hidden) return;
-    resumeAt = (lastTimestamp ?? performance.now()) + 3000; render();
+    if (!safeViewport() || document.hidden || !pauseReason || busy || ['pending', 'save-failed'].includes(application.projection().status)) return;
+    resumeRemaining = 3000; lastTimestamp = null; accumulator = 0; clearInput(); render();
   });
   element('retry-collection').addEventListener('click', () => { void runAction(() => application.retry()); });
   element('reset-salvage').addEventListener('click', () => {
-    clearEffect = null; pauseReason = null; resumeAt = null;
+    clearEffect = null; pauseReason = null; resumeRemaining = null;
     void runAction(() => application.resetAfterTopOut());
   });
   element('finish-salvage').addEventListener('click', () => { void runAction(() => application.finish()); });
@@ -178,8 +178,14 @@ export function mountPreRun(
     if (!live) return;
     try {
       const previous = lastTimestamp; lastTimestamp = timestamp;
-      if (resumeAt !== null && timestamp >= resumeAt && safeViewport() && !document.hidden) {
-        pauseReason = null; resumeAt = null; accumulator = 0; inputs = []; application.clearInput(); element('pre-run-board').focus();
+      if (resumeRemaining !== null) {
+        if (!safeViewport() || document.hidden) { pause('Paused: window too small or hidden.'); return; }
+        resumeRemaining = Math.max(0, resumeRemaining - (previous === null ? 0 : Math.max(0, timestamp - previous)));
+        if (resumeRemaining < 1e-7) {
+          pauseReason = null; resumeRemaining = null; accumulator = 0; clearInput(); element('pre-run-board').focus();
+        }
+        // The frame that finishes 3-2-1 is still a paused frame.
+        render(); return;
       }
       if (previous !== null && !pauseReason && !busy && application.projection().status === 'playing') {
         const elapsed = timestamp - previous;
@@ -190,9 +196,9 @@ export function mountPreRun(
           const queued = inputs; inputs = [];
           const update = application.advance(queued);
           const barrier = application.projection().status === 'pending';
-          if (barrier) { application.clearInput(); render(); }
+          if (barrier) { clearInput(); render(); }
           view = await update;
-          if (barrier || view.status !== 'playing') { accumulator = 0; lastTimestamp = null; break; }
+          if (barrier || view.status !== 'playing') { accumulator = 0; lastTimestamp = null; clearInput(); break; }
         }
       } else accumulator = 0;
       render();
@@ -202,9 +208,11 @@ export function mountPreRun(
   window.addEventListener('keydown', onKey); window.addEventListener('keyup', onKey);
   window.addEventListener('blur', onBlur); window.addEventListener('resize', onResize);
   document.addEventListener('visibilitychange', onVisibility);
+  if (!pauseReason && !document.hasFocus()) onBlur();
+  settings?.attach(root, () => pause('Paused for Settings. Close Settings, then choose Resume.'));
   render(); element('pre-run-board').focus(); frameId = requestAnimationFrame(frame);
   return () => {
-    live = false; cancelAnimationFrame(frameId); inputs = []; application.clearInput();
+    live = false; cancelAnimationFrame(frameId); clearInput();
     window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onKey);
     window.removeEventListener('blur', onBlur); window.removeEventListener('resize', onResize);
     document.removeEventListener('visibilitychange', onVisibility);
