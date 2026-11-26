@@ -4,7 +4,7 @@ Date: 2026-11-26 (Asia/Bangkok)
 
 ## Status
 
-Original development engineering work is complete: fresh full R4 and its complete ordered gate passed, followed by explicit user acceptance. The subsequent authorized publication found and corrected a canonical-index compatibility issue; fresh full R5, complete gate05, corrective publication and all three production cases now PASS. Ticket12 is live. Current publication identities and remaining closeout-record work are recorded in the publication plan linked below.
+Original development engineering work is complete: fresh full R4 and its complete ordered gate passed, followed by explicit user acceptance. Subsequent authorized publication corrected a canonical-index compatibility issue; fresh full R5, complete gate05, corrective publication and all three production cases PASS. PR #8 published the closeout records and its documentation-only deployment also passed exact artifacts and focused native proof. The publication plan linked below is completed.
 
 ## Outcome
 
@@ -83,4 +83,4 @@ The user explicitly accepted the completed Ticket12 result after the engineering
 
 ## Later Publication Authorization - 2026-11-26
 
-The user subsequently explicitly authorized publication and production verification. The engineering work remains complete; execution and actual live results belong to the [publication plan](../active/ticket12-publication-live-verification.md). Earlier no-publication statements above describe their historical checkpoints.
+The user subsequently explicitly authorized publication and production verification. The engineering work remains complete; execution and actual live results belong to the [publication plan](ticket12-publication-live-verification.md). Earlier no-publication statements above describe their historical checkpoints.

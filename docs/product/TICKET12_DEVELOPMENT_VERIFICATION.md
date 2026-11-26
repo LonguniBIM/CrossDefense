@@ -1,7 +1,7 @@
 # Ticket12 Development Verification
 
 Date: 2026-11-26 (Asia/Bangkok)
-Status: Corrected Ticket12 has fresh full R5 Standards/Spec/Architecture/Security PASS, complete ordered gate05 PASS, authorized publication through PR #7, exact production artifact proof PASS and three isolated production cases PASS. User acceptance remains Accepted. Final closeout-record publication and its resulting deployment verification are in progress.
+Status: Fresh full R5 Standards/Spec/Architecture/Security PASS; complete ordered gate05 PASS; authorized corrective publication through PR #7; exact production artifacts and three isolated live cases PASS. PR #8 published the closeout records and its documentation-only deployment passed exact artifacts and focused native proof. User acceptance remains Accepted; publication plan completed.
 
 ## Historical Initial Development Scope And Starting State
 
@@ -401,11 +401,11 @@ After the complete engineering closeout above, the user explicitly accepted Tick
 
 ## Later Publication Authorization - 2026-11-26
 
-After the accepted engineering and acceptance checkpoints above, the user explicitly authorized Ticket12 publication and completion of production verification. This supersedes their earlier no-publication boundary without changing historical results, raw review reports, SEC-F01 or ticket-specific acceptance limits. The [publication plan](../plans/active/ticket12-publication-live-verification.md) owns the rollout and actual live proof; no new runtime execution is claimed by this authority update.
+After the accepted engineering and acceptance checkpoints above, the user explicitly authorized Ticket12 publication and completion of production verification. This supersedes their earlier no-publication boundary without changing historical results, raw review reports, SEC-F01 or ticket-specific acceptance limits. The [publication plan](../plans/completed/ticket12-publication-live-verification.md) owns the rollout and actual live proof; no new runtime execution is claimed by this authority update.
 
 ## Historical Publication Compatibility Correction Checkpoint
 
-The accepted R4 candidate was published through PR #6 as 5970b2049733e186fb3ed677d9faeb96ada44c31. The existing Cloudflare integration deployed build ac183c83-0570-47b6-96c2-bcf717c90dce / version 7daa3a84-1255-465a-95ad-3d9b7ba34a58 successfully. A one-build, matching-ID reproduction verified all ten served files exactly, all nine SRIs and all six packs. Actual source/provider/runtime evidence and current publication authority are in the [active publication plan](../plans/active/ticket12-publication-live-verification.md).
+The accepted R4 candidate was published through PR #6 as 5970b2049733e186fb3ed677d9faeb96ada44c31. The existing Cloudflare integration deployed build ac183c83-0570-47b6-96c2-bcf717c90dce / version 7daa3a84-1255-465a-95ad-3d9b7ba34a58 successfully. A one-build, matching-ID reproduction verified all ten served files exactly, all nine SRIs and all six packs. Actual source/provider/runtime evidence and current publication authority are in the [completed publication plan](../plans/completed/ticket12-publication-live-verification.md).
 
 T12-PUB-INDEX-01 was then reproduced locally against actual Wrangler static-assets routing: /index.html returns 307 to /. After removing only an owned local index entry, public Retry left it missing because repair deliberately rejects redirects. Read-only native-worker probes showed that redirect:error failed while follow returned the correct 417-byte document/SRI. No production cache was modified. The original RED/probe evidence remains in publication-repair-diagnosis-01.
 
@@ -674,4 +674,64 @@ All three cleanup records observed the context close event, a closed page, remov
 
 T12-PUB-INDEX-01 is Closed/Fixed/Verified: causal local Wrangler RED/probe/GREEN, the durable negative/positive regression, full R5/gate05 and actual corrected-production coherence all pass. Production did not repeat destructive cache-fault injection. Historical live01 remains failed; live02 consumed the intentional 404 bodies while retaining the strict failed-request audit and passed all three cases. This supports the harness correction without rewriting live01.
 
-SEC-F01 remains Open/non-blocking: eight affected dependency entries, six Moderate and two High. User acceptance remains Accepted without implying separate acceptance of the corrective code, full MVP, asset-rights clearance, general release or Ticket02/03 acceptance. Final documentation publication and verification of its resulting build are the remaining closeout operations.
+SEC-F01 remains Open/non-blocking: eight affected dependency entries, six Moderate and two High. User acceptance remains Accepted without implying separate acceptance of the corrective code, full MVP, asset-rights clearance, general release or Ticket02/03 acceptance. At this application-publication checkpoint, documentation publication and verification of its resulting build remained; their completed results follow below.
+
+## Published Closeout Records And Their Production Verification
+
+[PR #8](https://github.com/LonguniBIM/CrossDefense/pull/8) published the nine
+reviewed closeout records. Feature 694b123761d76cb92c5657926223c111fcd12627
+merged normally at 2026-11-26T16:46:53Z as
+4d3f856743ca95a73d12e911611a579a5d8a8f79. Feature/merge trees equal
+e5d828daec3ccde97eb82ec1605763cf6ab982f1. Source/config/tests, all fifteen raw
+reviews and all 502 unrelated paths remained unchanged. The documentation
+diff passed independent review, canonical staged-blob checks, whitespace
+checks and 26 new local-link checks.
+
+| Identity or result | Actual value |
+| --- | --- |
+| Cloudflare build | e5ea9dda-4bca-41c8-ac57-82c2f515a93e |
+| Full version | f64b1390-5254-4596-a503-81f1689588f4 |
+| Active result | Ready, 100% traffic; created 16:47:41Z |
+| Deploy/build completed | 16:47:43.405Z / 16:47:43.628Z |
+| GitHub Workers Builds check | success at 16:47:46Z |
+| Served App build | 0.1.0-2026-11-26T16-47-34-871Z-3c2c88bb |
+| SW SHA-256 | b5193d7e99e3dc11eb2f52bad25aa3b30d5f5fe9260010c17a7f6ce189f5d6b8 |
+
+Provider evidence: publication-provider-docs-03.json,
+SHA-256 dc9c3219e4f98e76ea8cd58a1528f50a035abe38781a82229902045d7b9409ee.
+
+The fresh artifact03 verifier ran exactly once, PID 38288, exit 0,
+16:49:27.598Z to 16:49:36.641Z. Its single matching-ID reproduction build ran
+16:49:28.020Z to 16:49:29.194Z and passed. Results: 10/10 exact files,
+9/9 SRI, six packs, 10/10 MIME, 8/8 genuine 404s, matching source trees and
+stable before/after SW. Evidence: publication-artifacts-03/artifact-verification.json,
+SHA-256 8c7c01668dce5279567bb008be210a8685cb9ed9ffe22a44aa14ab851eb68888.
+
+The unchanged fresh live03 harness selected only the exact native-clock case.
+PID 34176 exited 0. Start 16:50:24.539Z; report duration 15.133251 seconds;
+case duration 14.467 seconds. Exactly one case and one attempt passed, with
+one worker, zero retries and repeat one. Skips/flakes/unexpected/global errors
+were zero. This is focused deployment coherence proof, not a repeated
+three-case gameplay/interruption run.
+
+The expected App build, activated/control root-scope worker, nine entries,
+six packs and factual readiness passed online and after offline reload.
+The four true 404 probes, saved H remap, restored Space default, offline-created
+Pilot persistence, native movement (pivot x4.5 to x3.5), Settings pause,
+explicit Resume/focus and hard drop passed. Page exceptions, failed requests
+and unexpected HTTP errors were zero. All cleanup assertions passed and the
+context closed at 16:50:39.514Z with zero remaining owned contexts; ordinary
+user profiles were unused.
+
+Evidence: publication-live-03/browser-results.json, 14,430 bytes,
+SHA-256 b4f8d1ebef25ca2e425ebcb47110e2653e2886ae8bd1e0bf3e1df8e3e238c946.
+The existing live01 failure, full live02 proof and all original evidence remain
+preserved. The executable aggregate remains
+18de1d68f8c02ef4dc8a3c6eadda64faf46f901fcd87e05df357b80fa63e135c.
+
+The publication plan moved to completed only after this actual published-record
+deployment proof. The final completion-record PR carries its own post-merge
+provider/runtime attestation, avoiding another source commit solely to embed
+that commit's deployment identity. Final handoff requires that last deployment
+to pass the same bounded artifact and native coherence checks. SEC-F01 and
+all previously stated acceptance/storage/browser/release limits remain.

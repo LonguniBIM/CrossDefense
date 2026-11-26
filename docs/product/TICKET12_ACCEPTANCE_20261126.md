@@ -4,11 +4,11 @@ Date: 2026-11-26 (Asia/Bangkok)
 
 ## Decision And Current Authority
 
-**Ticket12: Implemented / Integrated verification PASS / ChatGPT tri-axis PASS (fresh full R5) / User acceptance Accepted / Published / Production verification PASS. Final closeout-record publication is in progress.**
+**Ticket12: Implemented / Integrated verification PASS / ChatGPT tri-axis PASS (fresh full R5) / User acceptance Accepted / Published / Production verification PASS / Publication plan Completed.**
 
 The user explicitly accepted the completed Ticket12 result on 2026-11-26 and asked what to do next. This records acceptance of the approved offline/recovery slice and the engineering result presented in the preceding closeout. It supersedes earlier Ticket12 User acceptance Pending statements as current status; those statements remain valid historical checkpoints.
 
-The acceptance-only checkpoint did not authorize publication. The user's subsequent explicit instruction on 2026-11-26 authorizes Ticket12 publication and completion of production verification: stage, commit, push, pull-request creation, merge, deployment through the existing Cloudflare integration, isolated HTTPS verification and deployment-record updates. No repeated permission request is required. The actual corrected Ticket12 rollout is now verified through PR #7, exact production artifact proof and three passing isolated live cases. Ticket11 remains the accepted predecessor. See the [publication plan](../plans/active/ticket12-publication-live-verification.md).
+The acceptance-only checkpoint did not authorize publication. The user's subsequent explicit instruction on 2026-11-26 authorizes Ticket12 publication and completion of production verification: stage, commit, push, pull-request creation, merge, deployment through the existing Cloudflare integration, isolated HTTPS verification and deployment-record updates. No repeated permission request is required. The actual corrected Ticket12 rollout is now verified through PR #7, exact production artifact proof and three passing isolated live cases. Ticket11 remains the accepted predecessor. See the [publication plan](../plans/completed/ticket12-publication-live-verification.md).
 
 ## Accepted Scope And Original R4 Evidence
 
