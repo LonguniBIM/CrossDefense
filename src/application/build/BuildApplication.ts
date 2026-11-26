@@ -25,12 +25,13 @@ export class BuildApplication {
   private tail: Promise<void> = Promise.resolve();
   private opening = false;
   private attemptHold = false;
+  private appUpdateHold: symbol | null = null;
   private queued = 0;
 
   constructor(private readonly repository: RunRepository, private readonly content: ContentPackApplication) {}
 
   async open(pilotId: string): Promise<BuildOpenResult> {
-    if (this.attemptHold) throw new PlacementRejection('BUILD_TRANSITION', 'The Build is frozen for Attempt startup.');
+    if (this.attemptHold || this.appUpdateHold) throw new PlacementRejection('BUILD_TRANSITION', 'The Build is frozen for a saved transition.');
     if (this.pending) throw new PlacementRejection('SAVE_PENDING', 'Retry the pending edit before reopening Build.');
     if (this.opening || this.queued > 0) throw new PlacementRejection('BUILD_BUSY', 'Wait for the current Build operation before reopening.');
     this.opening = true;
@@ -86,7 +87,7 @@ export class BuildApplication {
 
   /** Synchronous admission prevents a launch from racing a same-turn layout edit. */
   holdForAttemptStart(): void {
-    if (this.pending || this.opening || this.queued || this.attemptHold) throw new PlacementRejection('BUILD_BUSY','Finish the current Build save before starting an Attempt.');
+    if (this.pending || this.opening || this.queued || this.attemptHold || this.appUpdateHold) throw new PlacementRejection('BUILD_BUSY','Finish the current Build save or App update before starting an Attempt.');
     this.attemptHold = true;
   }
   releaseAttemptStart(): void { this.attemptHold = false; }
@@ -97,8 +98,20 @@ export class BuildApplication {
   }
   isAttemptHeld(): boolean { return this.attemptHold; }
 
+  canHoldForAppUpdate(): boolean {
+    return !!this.context && !this.pending && !this.opening && !this.queued && !this.attemptHold && !this.appUpdateHold;
+  }
+
+  /** Admit a safe reload synchronously, including edits queued in this same turn. */
+  holdForAppUpdate(): () => void {
+    if (!this.canHoldForAppUpdate()) throw new PlacementRejection('BUILD_BUSY', 'Finish or retry the current Build save before updating the App.');
+    const token = Symbol('app-update');
+    this.appUpdateHold = token;
+    return () => { if (this.appUpdateHold === token) this.appUpdateHold = null; };
+  }
+
   private enqueue(request: BuildRequest): Promise<BuildSnapshot> {
-    if (this.attemptHold) return Promise.reject(new PlacementRejection('BUILD_TRANSITION', 'The Build is frozen for Attempt startup.'));
+    if (this.attemptHold || this.appUpdateHold) return Promise.reject(new PlacementRejection('BUILD_TRANSITION', 'The Build is frozen for a saved transition.'));
     if (this.opening || !this.context) return Promise.reject(new PlacementRejection('BUILD_NOT_READY', 'Wait for a compatible Build to finish opening.'));
     const input = structuredClone(request);
     this.queued += 1;

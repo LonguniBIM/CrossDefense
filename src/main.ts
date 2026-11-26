@@ -1,3 +1,5 @@
+import { BrowserOfflineRuntime } from './infrastructure/offline/BrowserOfflineRuntime';
+import { OfflineStatusView } from './presentation/OfflineStatusView';
 import { WorkspaceSettingsView } from './presentation/SettingsView';
 import { applyPresentationSettings } from './presentation/PresentationPreferences';
 import { SettingsApplication } from './application/workspace/SettingsApplication';
@@ -65,8 +67,40 @@ let stopReview: (() => void) | null = null;
 let screenEpoch = 0;
 let contentCandidateMessage: string | null = null;
 const pendingStartRequests = new Map<string, StartRunRequest>();
+let updateBoundary: 'none' | 'entry' | 'build' = 'none';
+let updateBuild: BuildApplication | null = null;
+let entryOperations = 0;
+let contentRetryPending = false;
+let localContentReady = false;
+let applyingUpdate = false;
+const offlineRuntime = import.meta.env.PROD ? new BrowserOfflineRuntime() : null;
+const offlineView = offlineRuntime ? new OfflineStatusView(root, offlineRuntime,
+  () => localContentReady, canApplyUpdate, applyAppUpdate) : null;
+
+function canApplyUpdate(): boolean {
+  return ownsWorkspace && localContentReady && !applyingUpdate && entryOperations === 0 && pendingStartRequests.size === 0
+    && !settingsApplication?.hasPendingSave() && !document.querySelector('dialog[open]')
+    && (updateBoundary === 'entry' || (updateBoundary === 'build' && !!updateBuild?.canHoldForAppUpdate()));
+}
+
+async function applyAppUpdate(): Promise<void> {
+  if (!offlineRuntime || !canApplyUpdate()) return;
+  const release = updateBoundary === 'build' ? updateBuild!.holdForAppUpdate() : () => {};
+  applyingUpdate = true;
+  root.inert = true;
+  let reloading = false;
+  try {
+    if (await offlineRuntime.activateWaiting()) {
+      reloading = true;
+      window.location.reload();
+    }
+  } finally {
+    if (!reloading) { release(); applyingUpdate = false; root.inert = false; offlineView?.render(); }
+  }
+}
 
 function page(content: string): void {
+  updateBoundary = 'none'; updateBuild = null;
   settingsView.dismiss();
   stopReview?.(); stopReview = null;
   stopResults?.(); stopResults=null;
@@ -85,6 +119,7 @@ function renderLoading(message: string): void {
 }
 
 function renderRecovery(message: string): void {
+  localContentReady = false;
   page(`
     <h1>Workspace recovery</h1>
     <p class="error" data-testid="recovery-message">${escapeHtml(message)}</p>
@@ -144,12 +179,14 @@ function renderChooser(projection: PilotChooserProjection): void {
     </form>
   `);
 
+  updateBoundary = 'entry';
   const form = root.querySelector<HTMLFormElement>('[data-testid="create-pilot-form"]');
   let pending = false;
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (pending || !application) return;
     pending = true;
+    entryOperations += 1;
     const button = root.querySelector<HTMLButtonElement>('[data-testid="create-pilot"]');
     const status = root.querySelector<HTMLElement>('[data-testid="command-status"]');
     if (button) button.disabled = true;
@@ -167,26 +204,28 @@ function renderChooser(projection: PilotChooserProjection): void {
       pending = false;
       if (button) button.disabled = false;
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
-    }
+    } finally { entryOperations -= 1; }
   });
 
   root.querySelectorAll<HTMLButtonElement>('[data-action="continue"]').forEach((button) => {
     button.addEventListener('click', async () => {
       if (!application) return;
       const pilotId = button.dataset.pilotId;
-      if (!pilotId) return;
+      if (!pilotId || applyingUpdate) return;
+      entryOperations += 1; updateBoundary = 'none';
       try {
         const next = await application.continuePilot(pilotId);
         if (!next.activePilot) throw new Error('No active Pilot was selected.');
         await renderPilotRun(next.activePilot);
       } catch (error) {
         renderRecovery(error instanceof Error ? error.message : String(error));
-      }
+      } finally { entryOperations -= 1; }
     });
   });
 }
 
 async function renderPilotRun(pilot: PilotProfile): Promise<void> {
+  const epoch = screenEpoch;
   if (!runApplication || !contentApplication) {
     renderContentUnavailable(pilot, 'Content runtime is unavailable.');
     return;
@@ -194,8 +233,10 @@ async function renderPilotRun(pilot: PilotProfile): Promise<void> {
 
   try {
     const projection = await runApplication.getRunProjection(pilot.pilotId);
+    if (epoch !== screenEpoch) return;
     if (projection.kind === 'no-run') {
       const pack = await contentApplication.getActivePack();
+      if (epoch !== screenEpoch) return;
       if (!pack) {
         renderContentUnavailable(
           pilot,
@@ -207,9 +248,9 @@ async function renderPilotRun(pilot: PilotProfile): Promise<void> {
       return;
     }
 
-    renderRunProjection(pilot, projection);
+    await renderRunProjection(pilot, projection);
   } catch (error) {
-    renderRecovery(error instanceof Error ? error.message : String(error));
+    if (epoch === screenEpoch) renderRecovery(error instanceof Error ? error.message : String(error));
   }
 }
 
@@ -238,11 +279,12 @@ function renderNewRun(
     <div class="status" data-testid="run-command-status"></div>
   `);
 
+  updateBoundary = 'entry';
   const request = pendingStartRequests.get(pilot.pilotId) ?? { operationId: crypto.randomUUID(), pilotId: pilot.pilotId };
   let pending = false;
   root.querySelector<HTMLButtonElement>('[data-testid="start-run"]')?.addEventListener('click', async () => {
-    if (pending || !runApplication) return;
-    pending = true;
+    if (pending || !runApplication || applyingUpdate) return;
+    pending = true; entryOperations += 1; updateBoundary = 'none';
     const button = root.querySelector<HTMLButtonElement>('[data-testid="start-run"]');
     const status = root.querySelector<HTMLElement>('[data-testid="run-command-status"]');
     if (button) button.disabled = true;
@@ -257,13 +299,14 @@ function renderNewRun(
       if (projection.kind === 'no-run') {
         throw new Error('Start Run returned no active Run.');
       }
-      renderRunProjection(pilot, projection);
+      await renderRunProjection(pilot, projection);
     } catch (error) {
       if (back) back.disabled = false;
       pending = false;
       if (button) button.disabled = false;
       if (status) status.textContent = error instanceof Error ? error.message : String(error);
-    }
+      updateBoundary = 'entry';
+    } finally { entryOperations -= 1; }
   });
 
   bindBackToPilots();
@@ -343,6 +386,7 @@ async function showBuild(pilot:PilotProfile,build:BuildApplication): Promise<voi
       if(epoch===screenEpoch) renderRecovery(error instanceof Error?error.message:String(error));
     }
   },{open:async()=>enterResults(pilot),salvage:async()=>enterPostSalvage(pilot),credits:results.economy.credits,celestium:results.economy.celestium,unsettled:results.outcomes.filter(row=>!row.settlement).length,lastSettled:results.outcomes.some(row=>row.outcome.attemptId===results.run.attempt?.attemptId&&!!row.settlement)}, pack?.review ? { dueCount, open: async()=>enterReview(pilot) } : undefined);
+  updateBuild = build; updateBoundary = 'build';
   settingsView.attach(root);
 }
 function renderReviewRecovery(pilot: PilotProfile, build: BuildApplication, review: ReviewApplication, error: unknown): void {
@@ -428,8 +472,8 @@ async function enterPostSalvage(pilot:PilotProfile):Promise<void>{
   }catch(error){if(epoch===screenEpoch)renderRecovery(error instanceof Error?error.message:String(error));}
 }
 
-function renderRunProjection(pilot: PilotProfile, projection: Exclude<RunProjection, { kind: 'no-run' }>): void {
-  if (projection.kind === 'build') { void enterBuild(pilot); return; }
+async function renderRunProjection(pilot: PilotProfile, projection: Exclude<RunProjection, { kind: 'no-run' }>): Promise<void> {
+  if (projection.kind === 'build') { await enterBuild(pilot); return; }
   if (projection.kind === 'attempt') { showDiagnostic(pilot,projection.run); return; }
   if (projection.kind === 'content-required') {
     page(`
@@ -446,9 +490,7 @@ function renderRunProjection(pilot: PilotProfile, projection: Exclude<RunProject
         <button class="secondary" data-testid="back-to-pilots">Back to Pilots</button>
       </div>
     `);
-    root.querySelector<HTMLButtonElement>('[data-testid="retry-content"]')?.addEventListener('click', async () => {
-      await retryContent(pilot);
-    });
+    bindContentRetry(pilot);
     bindBackToPilots();
     return;
   }
@@ -481,48 +523,100 @@ function renderContentUnavailable(pilot: PilotProfile, message: string): void {
       <button class="secondary" data-testid="back-to-pilots">Back to Pilots</button>
     </div>
   `);
-  root.querySelector<HTMLButtonElement>('[data-testid="retry-content"]')?.addEventListener('click', async () => {
-    await retryContent(pilot);
-  });
+  bindContentRetry(pilot);
   bindBackToPilots();
 }
 
+function bindContentRetry(pilot: PilotProfile): void {
+  const button = root.querySelector<HTMLButtonElement>('[data-testid="retry-content"]');
+  if (!button) return;
+  button.disabled = contentRetryPending;
+  button.addEventListener('click', () => { void retryContent(pilot); });
+}
+
 async function retryContent(pilot: PilotProfile): Promise<void> {
+  if (contentRetryPending || applyingUpdate) return;
+  contentRetryPending = true;
+  entryOperations += 1;
+  const epoch = screenEpoch;
+  const contentOwner = contentApplication;
+  const isCurrent = () => epoch === screenEpoch && contentOwner === contentApplication;
+  const button = root.querySelector<HTMLButtonElement>('[data-testid="retry-content"]');
+  if (button) button.disabled = true;
   try {
-    let recoveredDefaultCandidate: unknown;
-    const run = await workspaceRepository?.getActiveRun(pilot.pilotId);
-    if (run && contentApplication && !(await contentApplication.getPack(run.contentVersion, run.rulesetVersion))) {
-      const url = PINNED_PACK_URLS.get(run.contentVersion);
-      if (url) {
-        try {
-          const response = await fetch(url, { cache: 'no-store' });
-          if (response.ok) {
-            const recovered = await response.json();
-            const restored = await contentApplication.restorePinned(recovered, run.contentVersion, run.rulesetVersion);
-            if (!restored.restored) contentCandidateMessage = restored.issues.map(issue => issue.message).join(' ');
-            else if (url === DEVELOPMENT_PACK_URL) recoveredDefaultCandidate = recovered;
+    try {
+      let recoveredDefaultCandidate: unknown;
+      const run = await workspaceRepository?.getActiveRun(pilot.pilotId);
+      if (!isCurrent()) return;
+      if (run && contentOwner) {
+        const pinned = await contentOwner.getPack(run.contentVersion, run.rulesetVersion);
+        if (!isCurrent()) return;
+        if (!pinned) {
+          const url = PINNED_PACK_URLS.get(run.contentVersion);
+          if (url) {
+            try {
+              const response = await fetch(url, { cache: 'no-store' });
+              if (!isCurrent()) return;
+              if (response.ok) {
+                const recovered = await response.json();
+                if (!isCurrent()) return;
+                const restored = await contentOwner.restorePinned(recovered, run.contentVersion, run.rulesetVersion);
+                if (!isCurrent()) return;
+                if (!restored.restored) contentCandidateMessage = restored.issues.map(issue => issue.message).join(' ');
+                else if (url === DEVELOPMENT_PACK_URL) recoveredDefaultCandidate = recovered;
+              }
+            } catch (error) {
+              if (error instanceof ContentStorageError) throw error;
+              if (!isCurrent()) return;
+              contentCandidateMessage = error instanceof Error ? error.message : String(error);
+            }
           }
-        } catch (error) {
-          if (error instanceof ContentStorageError) throw error;
-          contentCandidateMessage = error instanceof Error ? error.message : String(error);
         }
       }
+      await refreshDevelopmentCandidate(recoveredDefaultCandidate, isCurrent);
+    } finally {
+      // Navigation cancels later work, but an admitted content write must settle.
+      // Reconcile shared readiness even if its originating screen was replaced.
+      if (contentOwner === contentApplication) {
+        localContentReady = false;
+        const ready = !!(await contentOwner?.getActivePack());
+        if (contentOwner === contentApplication) localContentReady = ready;
+      }
     }
-    await refreshDevelopmentCandidate(recoveredDefaultCandidate);
+    if (!isCurrent()) return;
     await renderPilotRun(pilot);
   } catch (error) {
-    renderRecovery(error instanceof Error ? error.message : String(error));
+    if (isCurrent()) renderRecovery(error instanceof Error ? error.message : String(error));
+  } finally {
+    contentRetryPending = false;
+    entryOperations -= 1;
+    const currentRetry = root.querySelector<HTMLButtonElement>('[data-testid="retry-content"]');
+    if (currentRetry) currentRetry.disabled = false;
+    offlineView?.render();
   }
 }
 
 function bindBackToPilots(): void {
   root.querySelector<HTMLButtonElement>('[data-testid="back-to-pilots"]')?.addEventListener('click', async () => {
-    if (application) renderChooser(await application.getPilotChooser());
+    if (!application || applyingUpdate) return;
+    // Cancel the originating screen before the chooser read can yield.
+    renderLoading('Opening the Pilot chooser...');
+    const epoch = screenEpoch;
+    try {
+      const chooser = await application.getPilotChooser();
+      if (epoch === screenEpoch) renderChooser(chooser);
+    } catch (error) {
+      if (epoch === screenEpoch) renderRecovery(error instanceof Error ? error.message : String(error));
+    }
   });
 }
 
-async function refreshDevelopmentCandidate(recoveredDefaultCandidate?: unknown): Promise<void> {
-  if (!contentApplication) return;
+async function refreshDevelopmentCandidate(
+  recoveredDefaultCandidate?: unknown,
+  isCurrent: () => boolean = () => true,
+): Promise<void> {
+  const contentOwner = contentApplication;
+  if (!contentOwner || !isCurrent()) return;
 
   try {
     // A same-default Retry already fetched this body. Revalidate it through the
@@ -530,20 +624,22 @@ async function refreshDevelopmentCandidate(recoveredDefaultCandidate?: unknown):
     let candidate = recoveredDefaultCandidate;
     if (candidate === undefined) {
       const response = await fetch(DEVELOPMENT_PACK_URL, { cache: 'no-store' });
+      if (!isCurrent()) return;
       if (!response.ok) {
         contentCandidateMessage = `Development Content Pack request failed: ${response.status}.`;
         return;
       }
       candidate = await response.json();
     }
-
-    const result = await contentApplication.activateCandidate(candidate);
+    if (!isCurrent()) return;
+    const result = await contentOwner.activateCandidate(candidate);
+    if (!isCurrent()) return;
     contentCandidateMessage = result.activated
       ? null
       : result.issues.map((issue) => `${issue.code}: ${issue.message}`).join(' ');
   } catch (error) {
     if (error instanceof ContentStorageError) throw error;
-    contentCandidateMessage = error instanceof Error ? error.message : String(error);
+    if (isCurrent()) contentCandidateMessage = error instanceof Error ? error.message : String(error);
   }
 }
 
@@ -591,6 +687,7 @@ async function bootstrap(): Promise<void> {
     try {
       await contentApplication.bootstrap();
       await refreshDevelopmentCandidate();
+      localContentReady = !!(await contentApplication.getActivePack());
     } catch (error) {
       if (error instanceof ContentStorageError) throw error;
       contentCandidateMessage = error instanceof Error ? error.message : String(error);
@@ -604,5 +701,6 @@ async function bootstrap(): Promise<void> {
   }
 }
 
-window.addEventListener('pagehide', () => { stopReview?.();stopReview=null;stopResults?.();stopResults=null;stopAttempt?.();stopAttempt=null;stopBuild?.(); stopBuild = null; stopPreRun?.(); stopPreRun = null; lock.release(); });
+window.addEventListener('pagehide', () => { stopReview?.();stopReview=null;stopResults?.();stopResults=null;stopAttempt?.();stopAttempt=null;stopBuild?.(); stopBuild = null; stopPreRun?.(); stopPreRun = null; lock.release(); offlineView?.dispose(); offlineRuntime?.dispose(); });
+void offlineRuntime?.start();
 void bootstrap();

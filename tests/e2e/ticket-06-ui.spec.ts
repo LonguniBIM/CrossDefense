@@ -194,6 +194,8 @@ test('CS06-02 Map-selection read failure renders recovery after the Build view h
 
 test('CS06-03 Map and diagnostic fit the accepted minimum and reference viewport without document scroll',async({page},testInfo)=>{
   await openSavedBuild(page,run,pack);await ship(page);await page.getByTestId('choose-map').click();
+  // Map selection loads asynchronously; wait for that view before measuring its layout.
+  await expect(page.getByRole('heading',{name:'Map and difficulty',exact:true})).toBeVisible();
   for(const viewport of [{width:1280,height:720},{width:1366,height:768}]) {
     await page.setViewportSize(viewport);
     const bounds=await page.evaluate(()=>({width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight}));
