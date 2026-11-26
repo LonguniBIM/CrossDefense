@@ -12,8 +12,7 @@ and a successful production deployment. See
 [the completed deployment record](../plans/completed/cloudflare-static-deployment.md)
 for source identity, provider evidence, live verification and known limits.
 
-Ticket12 offline caching and update behavior remain ON HOLD. Player state stays
-in browser-local IndexedDB; hosting does not add cloud accounts or save sync.
+The user accepted the completed Ticket11 hosting deployment and authorized Ticket12 offline caching and update work for development-only implementation on 2026-11-26. Ticket12 has passed integrated development verification and the fresh full R4 ChatGPT tri-axis review; see the [contract](../product/TICKET12_OFFLINE_CONTRACT.md), [verification record](../product/TICKET12_DEVELOPMENT_VERIFICATION.md) and [review record](../product/TICKET12_CHATGPT_TRI_AXIS_REVIEW.md). The user accepted the completed Ticket12 development result on 2026-11-26; see the [acceptance record](../product/TICKET12_ACCEPTANCE_20261126.md). The user's subsequent instruction explicitly authorizes Ticket12 staging, commit, push, PR creation, merge, deployment through this existing integration and isolated production verification; see the [publication plan](../plans/active/ticket12-publication-live-verification.md). The live production deployment still represents the accepted Ticket11 checkpoint. Player state stays in browser-local IndexedDB; hosting does not add cloud accounts or save sync.
 
 ## Prerequisites
 
