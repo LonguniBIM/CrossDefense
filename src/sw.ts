@@ -12,6 +12,15 @@ const controller = new PrecacheController({
   // Retain previous build caches. No application or Player Data garbage collection occurs here.
   cacheName: `${cachePrefix}${APP_BUILD_ID}`,
   plugins: [{
+    async requestWillFetch({ request, event }) {
+      // Repair the canonical document directly without following redirects. Workbox
+      // retains the original manifest request for its cache key and integrity check.
+      if (event.type === 'message' && request.method === 'GET' && request.redirect === 'error'
+        && request.url === new URL('index.html', scope).href) {
+        return new Request(scope.href, request);
+      }
+      return request;
+    },
     async cacheWillUpdate({ request, response }) {
       const key = controller.getCacheKeyForURL(request.url) ?? request.url;
       const expected = controller.getIntegrityForCacheKey(key);
