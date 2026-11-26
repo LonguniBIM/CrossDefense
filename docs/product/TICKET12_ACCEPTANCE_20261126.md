@@ -4,13 +4,13 @@ Date: 2026-11-26 (Asia/Bangkok)
 
 ## Decision And Current Authority
 
-**Ticket12: Implemented / Integrated verification PASS / ChatGPT tri-axis PASS (fresh full R4) / User acceptance Accepted. Publication explicitly authorized; live verification pending.**
+**Ticket12: Implemented / Integrated verification PASS / ChatGPT tri-axis PASS (fresh full R5) / User acceptance Accepted / Published / Production verification PASS. Final closeout-record publication is in progress.**
 
 The user explicitly accepted the completed Ticket12 result on 2026-11-26 and asked what to do next. This records acceptance of the approved offline/recovery slice and the engineering result presented in the preceding closeout. It supersedes earlier Ticket12 User acceptance Pending statements as current status; those statements remain valid historical checkpoints.
 
-The acceptance-only checkpoint did not authorize publication. The user's subsequent explicit instruction on 2026-11-26 authorizes Ticket12 publication and completion of production verification: stage, commit, push, pull-request creation, merge, deployment through the existing Cloudflare integration, isolated HTTPS verification and deployment-record updates. No repeated permission request is required. The accepted live baseline remains Ticket11 until the actual Ticket12 rollout is verified. See the [publication plan](../plans/active/ticket12-publication-live-verification.md).
+The acceptance-only checkpoint did not authorize publication. The user's subsequent explicit instruction on 2026-11-26 authorizes Ticket12 publication and completion of production verification: stage, commit, push, pull-request creation, merge, deployment through the existing Cloudflare integration, isolated HTTPS verification and deployment-record updates. No repeated permission request is required. The actual corrected Ticket12 rollout is now verified through PR #7, exact production artifact proof and three passing isolated live cases. Ticket11 remains the accepted predecessor. See the [publication plan](../plans/active/ticket12-publication-live-verification.md).
 
-## Accepted Scope And Evidence
+## Accepted Scope And Original R4 Evidence
 
 Accepted scope: complete offline create/continue through Pre-Run, Build, Attempt, result/Salvage, optional Review and return to Build after successful preparation; durable interruption recovery; safe staged updates at entry/Build after pending writes; truthful cache readiness/repair; immutable content pins and Last Known Good; the reviewed ownership and viewport corrections.
 
@@ -59,8 +59,20 @@ At the original acceptance-record checkpoint, no publication step above had been
 
 ## Limits Carried Forward
 
-SEC-F01 remains Open/non-blocking. The R4 audit was not clean: eight affected package entries, six Moderate and two High. Ticket12 acceptance is not blanket dependency-risk acceptance; no audit fix, dependency upgrade or new release assurance is inferred.
+SEC-F01 remains Open/non-blocking. The R4 audit and fresh R5 read-only audit were not clean: eight affected package entries, six Moderate and two High. Ticket12 acceptance is not blanket dependency-risk acceptance; no audit fix, dependency upgrade or new release assurance is inferred.
 
 This closes user acceptance for Ticket12's approved first durable slice scope. It does not establish full-MVP completion, complete content/asset-rights acceptance, general release readiness, or a new acceptance decision for Ticket02/03. The remaining MVP work requires separately approved slices; no new numbered ticket or feature implementation is opened automatically.
 
 Provider reviewers, review credentials, suspended orchestration, WFP/G-R/G-P and retry/reconstruction/rerouting of refused snapshot operations remain outside scope.
+
+## Subsequent Authorized Publication Evidence
+
+Acceptance remains the user's original Accepted decision. The bounded canonical-index compatibility correction was performed under the later publication authorization; this record does not imply a separate user review of that corrective code.
+
+- PR #6 published the accepted R4 candidate. PR #7 published the reviewed correction as merge b69c2972570e8e67807cba5348f487e409469e55.
+- Fresh full R5: Standards PASS, Spec PASS, Architecture PASS and Security GREEN/PASS. All fifteen complete R1-R5 raw reports remain unchanged.
+- Complete ordered gate05: typecheck; 336/336 headless; 217/217 development; fresh build and Wrangler dry-run; 130/130 production; fresh A/B builds; 20/20 native. These are a new complete post-correction gate, separate from the accepted R4 table above.
+- Actual Cloudflare build fd715b97-34b9-4c03-8753-35a333292b61, version 4c1c1b8a-1c52-41c3-98a8-49f00c7daf11, AppBuild 0.1.0-2026-11-26T16-32-56-776Z-d969a7d3: Ready at 100% traffic; 10/10 exact artifacts, 9/9 SRI, six packs, 10 MIME checks and eight real 404 boundaries PASS.
+- Actual isolated production proof: 3/3 cases, one attempt each. Native offline readiness/Settings/keyboard, an earned complete offline loop with same-run browser/headless parity, and committed-loot interruption/repeated recovery all PASS. Owned contexts were closed; ordinary browser data was untouched.
+
+The complete production loop used 198 ordered inputs and finished with exactly-once settlement/Salvage/Review and 26 Credits / 1 Celestium. The interrupted case retained four committed payloads without victory settlement or Review reward. Existing deterministic RAF/UUID helpers were used for the two gameplay cases; the first case used native time. This is bounded recorded-browser proof. Historical live01 remains failed; no production cache/quota fault was injected. The verification record contains the evidence paths, hashes, screenshot dimensions and cleanup details.

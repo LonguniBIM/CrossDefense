@@ -4,10 +4,11 @@ Date: 2026-11-26 (Asia/Bangkok)
 
 ## Status
 
-Active. User acceptance and publication authorization are satisfied.
-Initial PR #6 deployed successfully. The canonical-index incompatibility has
-a reviewed correction and complete post-R5 local gate05 PASS. Corrective
-publication, actual production verification and published closeout remain.
+Active only for final closeout publication. User acceptance and publication
+authorization are satisfied. Initial PR #6 and corrective PR #7 are deployed;
+fresh full R5, complete gate05, exact production artifact proof and all three
+isolated live cases PASS. Publish the current records and verify the resulting
+documentation-only deployment before moving this plan to completed.
 
 ## Outcome
 
@@ -22,8 +23,8 @@ browser contexts, and leave reviewable source/provider/runtime evidence.
 - [Contract](../../product/TICKET12_OFFLINE_CONTRACT.md), [verification](../../product/TICKET12_DEVELOPMENT_VERIFICATION.md), [review](../../product/TICKET12_CHATGPT_TRI_AXIS_REVIEW.md).
 - [Consumer deployment runbook](../../deployment/CLOUDFLARE_WORKERS.md).
 - Existing Windows checkout: D:\01_DCMvn\Workspace\CrossDefense.
-- Source baseline and origin/main: 0fd3f7bf67c1662f01d8449f4623518b69f06a92.
-- Feature branch: feature/ticket12-offline-recovery.
+- Initial source baseline and origin/main: 0fd3f7bf67c1662f01d8449f4623518b69f06a92.
+- Initial feature branch: feature/ticket12-offline-recovery.
 - Production URL: https://crossdefense.dklong2308.workers.dev.
 - Worker: crossdefense; existing Workers Free static-assets configuration.
 
@@ -81,7 +82,7 @@ release or Ticket02/03 acceptance; unrelated production configuration changes.
 - [x] Explicit staging, canonical content verification, commit and push.
 - [x] PR inspection and permitted merge.
 - [x] Successful initial Cloudflare build/deployment attributed to the merged source.
-- [ ] Actual HTTPS/artifact/service-worker/offline/recovery proof and cleanup.
+- [x] Actual HTTPS/artifact/service-worker/offline/recovery proof and cleanup.
 - [ ] Publication of current closeout records and final deployment verification.
 
 ## Decisions
@@ -105,7 +106,8 @@ These are prior accepted results, not new executions by this publication phase.
 
 Publication staging verified all 45 explicit paths against their canonical Git blobs, the accepted raw executable aggregate, all twelve unchanged raw report hashes and the preserved 502 unrelated untracked paths. The full staged whitespace check exited 2 with 33 trailing-whitespace diagnostics confined to nine raw review reports. Independent inspection confirmed exactly two ASCII spaces after nonblank prose/list text, outside code, preserving original Markdown hard breaks. All twelve reports remain verbatim. The separate check excluding only docs/reviews/ticket12/*.md passed; 45 staged paths, zero unstaged tracked changes and 502 preserved unrelated untracked paths were reconfirmed. This is a documented formatting exception, not an all-files whitespace PASS.
 
-New live publication proof: pending. Runtime evidence will be kept under
+At the initial publication checkpoint, new live proof was pending.
+Subsequent completed evidence is recorded below. Runtime evidence is kept under
 C:\Users\Admin\AppData\Local\CrossDefenseTaskEvidence\Ticket12-20261126.
 
 ## Production Findings And Corrective Verification
@@ -122,7 +124,7 @@ Initial publication:
   9/9 SRIs, six approved packs, correct MIME types and eight genuine 404
   boundaries. Evidence: publication-artifacts-01/artifact-verification.json.
 
-T12-PUB-INDEX-01 (Fixed and Verified by R5 and complete local gate05; corrected production proof pending): Cloudflare's existing static HTML handling
+T12-PUB-INDEX-01 (Closed/Fixed/Verified; see the subsequent production proof below): Cloudflare's existing static HTML handling
 returns 307 from /index.html to /. The required index precache entry uses
 index.html, while repair uses redirect:error. An owned local Wrangler
 reproduction established initial readiness, removed exactly its local index
@@ -154,7 +156,7 @@ initial production merge. The original Ticket12 review fixed point remains
 remain historical; a fresh full R5 and an executable gate are required before
 the corrected candidate is published.
 
-## Focused Corrective Result
+## Historical Focused Corrective Result
 
 The correction uses a repair-only exact-index requestWillFetch hook. Workbox's
 network Request changes to the scope root while its original cache request
@@ -173,11 +175,11 @@ ports 4188/8787/9230 are free. All original RED and failed live evidence remains
 The separate final full R5 and complete ordered gate are pending. The original
 Ticket12 fixed point stays unchanged; the entire current change set will be
 frozen in memory for independent Code/Spec, Architecture and Security review.
-## Result
+## Historical Pre-R5 Result
 
 Initial publication succeeded. Production verification remains incomplete until the canonical-index repair correction and final live proof are complete.
 
-## Fresh R5 And Ordered Gate
+## Historical Fresh R5 And Ordered-Gate Start
 
 The complete corrected Ticket12 change set received independent Standards PASS,
 Spec PASS, Architecture PASS and Security GREEN/PASS. Root's post-review
@@ -202,7 +204,7 @@ regression, fresh A/B/native proof, corrected deployment and live verification
 remain pending. The identified compatibility defect is the concrete reason
 for repeating the full accepted local selection.
 
-## Completed Local Gate05
+## Completed Local Gate05 Checkpoint
 
 Fresh full R5 and the separate complete ordered gate05 are PASS on executable
 aggregate 18de1d68f8c02ef4dc8a3c6eadda64faf46f901fcd87e05df357b80fa63e135c.
@@ -224,3 +226,79 @@ Verified without changing executable code. SEC-F01 remains Open/non-blocking.
 Next: publish the explicit eleven-path correction, observe its actual
 Cloudflare source/version/build, and run the prepared artifact and isolated
 three-case live proof. The initial failed live01 evidence remains unchanged.
+
+## Corrective Publication And Completed Production Proof
+
+[PR #7](https://github.com/LonguniBIM/CrossDefense/pull/7) published feature
+143d0ca0acbef9f5d1872ced74d8a15bfb48c088 as merge
+b69c2972570e8e67807cba5348f487e409469e55 at 2026-11-26T16:32:08Z.
+Feature/merge tree: 96cea58c438242a81459eee3d22686dd53f1d07b.
+The permitted normal merge used the expected head; no protection was bypassed.
+
+Corrective staging selected eleven explicit paths, verified canonical Git
+blobs, the unchanged executable aggregate and all fifteen raw reports, and
+preserved all 502 unrelated untracked paths. The full whitespace check returned
+twelve original two-space Markdown hard breaks in the raw R5 Code/Spec and
+Security reports. The separate check excluding only raw reports passed.
+Those reports remain verbatim; no all-files whitespace PASS is claimed.
+
+Actual Cloudflare build fd715b97-34b9-4c03-8753-35a333292b61 completed at
+16:33:11.499Z; GitHub Workers Builds reported success at 16:33:14Z.
+Full version 4c1c1b8a-1c52-41c3-98a8-49f00c7daf11 was Ready at 100% traffic.
+The served App build was 0.1.0-2026-11-26T16-32-56-776Z-d969a7d3.
+Existing static-assets/Free/main/production-URL/disabled-preview settings stayed
+unchanged. publication-provider-corrective.json preserves provider evidence.
+
+The one-time publication-artifacts-02 verifier exited 0 and proved 10/10 exact
+served files, 9/9 SRI, six approved packs, 10/10 MIME and 8/8 real 404 boundaries.
+Evidence SHA-256:
+6b15643f2b3476bb2ad7e4a313973ad86717ee0337f4258c73d4b65ed8170f2d.
+
+The publication-live-02 run exited 0: all three cases passed once, one worker,
+zero retries/repeats beyond one, zero skips/flakes/unexpected/global errors.
+It ran from 16:36:32.482Z for 70.084211 seconds. Native HTTPS/offline readiness,
+Settings/keyboard/Pilot persistence, actual offline earned loop with paired
+headless parity, and committed-loot interruption/repeated recovery all passed.
+Every context observed the expected App build, activated controlling worker,
+nine cached entries and all six packs. There were zero page exceptions or
+failed requests; four intentional 404s remained correctly classified.
+
+The played loop used 198 ordered inputs, Victory tick 3673 and 20 payloads.
+Browser/headless SHA-256:
+ef5a8bc7109b91d4caa7160dae631710fe2e8fc728ffe472867f4b96d6f44459.
+Final economy: 26 Credits / 1 Celestium, with once-only settlement/Cargo/Review.
+Interruption preserved four committed payloads at tick 15 and yielded one
+interrupted outcome, no settlement/Review reward and stable repeated recovery.
+The two gameplay cases used existing deterministic RAF/UUID helpers; the first
+case used native time. No Player Data was seeded.
+
+Report SHA-256:
+a2c41e8a640195304217cb87a97d1cd568169604debcf7b0a601872fc9a02f80.
+Root inspected six actual PNGs: four 1366x768, a full-page 1366x816 chooser and
+a full-page 1366x896 Review. No no-scroll claim follows from the taller images.
+All three context-close records passed; the final context closed at
+16:37:42.327Z with zero remaining owned contexts. Ordinary profiles stayed
+untouched. No production cache/quota fault was injected.
+
+T12-PUB-INDEX-01 is Closed/Fixed/Verified within the causal local fault proof,
+complete R5/gate05 and actual non-destructive production scope.
+T12-R5-CS-STD-01 remains Fixed/Verified. SEC-F01 stays Open/non-blocking.
+Historical live01, RED/probe evidence and all raw reviews remain unchanged.
+Detailed identities, source hashes, runtime evidence and limits are in
+the development verification record.
+
+## Current Result After Corrective Production Verification
+
+Ticket12 is accepted, published and verified on production. The original
+acceptance decision is retained without inventing a separate corrective-code
+acceptance. No full-MVP, general release, asset-rights or Ticket02/03 acceptance
+is inferred. The only remaining operations are publishing the current closeout
+records and verifying the resulting documentation-only deployment, then moving
+this plan to completed and verifying the final completion-record deployment.
+
+Later documentation-only deployments retain the verified executable aggregate.
+Each receives its own actual source/provider/AppBuild attribution, one exact
+artifact reproduction and the native-clock HTTPS/offline/Settings/keyboard
+case. The complete three-case gameplay/recovery proof above remains the evidence
+for unchanged behavior; full local regressions are not repeated without a new
+executable risk.
