@@ -1,13 +1,13 @@
 # Ticket12 Development Verification
 
 Date: 2026-11-26 (Asia/Bangkok)
-Status: Corrected Ticket12 candidate has fresh full R5 Standards/Spec/Architecture/Security PASS and complete post-R5 gate05 PASS (typecheck; 336 headless; 217 development; 130 production; 20 native; integrity/evidence/cleanup). User acceptance remains Accepted. Corrective publication and actual corrected-production verification are pending.
+Status: Corrected Ticket12 has fresh full R5 Standards/Spec/Architecture/Security PASS, complete ordered gate05 PASS, authorized publication through PR #7, exact production artifact proof PASS and three isolated production cases PASS. User acceptance remains Accepted. Final closeout-record publication and its resulting deployment verification are in progress.
 
-## Scope And Starting State
+## Historical Initial Development Scope And Starting State
 
 Requirement: [Ticket12 offline/recovery contract](TICKET12_OFFLINE_CONTRACT.md), approved first-slice specification and the user's explicit development-only continuation instruction.
 
-Original fixed point and current HEAD: 0fd3f7bf67c1662f01d8449f4623518b69f06a92. Starting branch main; working branch feature/ticket12-offline-recovery. Entry verification observed zero tracked/index changes and 502 pre-existing untracked paths. No stage, commit, push, merge, deploy or Cloudflare mutation is part of this ticket.
+Original fixed point and initial development HEAD: 0fd3f7bf67c1662f01d8449f4623518b69f06a92. Starting branch main; working branch feature/ticket12-offline-recovery. Entry verification observed zero tracked/index changes and 502 pre-existing untracked paths. No stage, commit, push, merge, deploy or Cloudflare mutation is part of this ticket.
 
 All proof uses the existing Windows checkout on DESKTOP-DBD6QJO and owned loopback origins with isolated browser contexts. Existing production Player Data and the live Ticket11 deployment are not test targets.
 
@@ -403,7 +403,7 @@ After the complete engineering closeout above, the user explicitly accepted Tick
 
 After the accepted engineering and acceptance checkpoints above, the user explicitly authorized Ticket12 publication and completion of production verification. This supersedes their earlier no-publication boundary without changing historical results, raw review reports, SEC-F01 or ticket-specific acceptance limits. The [publication plan](../plans/active/ticket12-publication-live-verification.md) owns the rollout and actual live proof; no new runtime execution is claimed by this authority update.
 
-## Publication Compatibility Correction - 2026-11-26
+## Historical Publication Compatibility Correction Checkpoint
 
 The accepted R4 candidate was published through PR #6 as 5970b2049733e186fb3ed677d9faeb96ada44c31. The existing Cloudflare integration deployed build ac183c83-0570-47b6-96c2-bcf717c90dce / version 7daa3a84-1255-465a-95ad-3d9b7ba34a58 successfully. A one-build, matching-ID reproduction verified all ten served files exactly, all nine SRIs and all six packs. Actual source/provider/runtime evidence and current publication authority are in the [active publication plan](../plans/active/ticket12-publication-live-verification.md).
 
@@ -429,7 +429,7 @@ The actual-Wrangler GREEN JSON is publication-repair-diagnosis-01/green-01-resul
 
 The original Ticket12 fixed point remains 0fd3f7bf67c1662f01d8449f4623518b69f06a92. A fresh full R5 review and a subsequent complete ordered executable gate are pending for this corrected candidate. All prior R1-R4 reports, failures, accepted gate04 results and SEC-F01 remain unchanged historical evidence. Actual production verification of the corrected deployment is also pending.
 
-## Fresh Full R5 Checkpoint
+## Historical Fresh Full R5 Checkpoint
 
 The complete corrected Ticket12 slice received fresh independent Standards PASS,
 Spec PASS, Architecture PASS and Security GREEN/PASS. Root confirmed the
@@ -611,3 +611,67 @@ All original failed runs, focused RED/probe evidence and raw R1-R5 reports remai
 unchanged. SEC-F01 stays Open/non-blocking with the non-clean R5 audit.
 The isolated Chromium/storage/provenance limitations and all ticket-specific
 acceptance, asset-rights, full-MVP and suspended-operation boundaries remain.
+
+## Corrective Publication And Actual Production Proof
+
+The authorized correction was committed as 143d0ca0acbef9f5d1872ced74d8a15bfb48c088 and published through [PR #7](https://github.com/LonguniBIM/CrossDefense/pull/7). Normal merge b69c2972570e8e67807cba5348f487e409469e55 completed at 2026-11-26T16:32:08Z. Feature and merge trees both equal 96cea58c438242a81459eee3d22686dd53f1d07b. No executable change followed R5/gate05.
+
+### Observed Provider And Exact Artifacts
+
+| Field | Actual observation |
+| --- | --- |
+| URL | https://crossdefense.dklong2308.workers.dev |
+| Cloudflare build | fd715b97-34b9-4c03-8753-35a333292b61 |
+| Full active version | 4c1c1b8a-1c52-41c3-98a8-49f00c7daf11 |
+| Ready / traffic | Ready, 100%; version created 2026-11-26T16:33:07Z |
+| Build completion / GitHub check | 16:33:11.499Z / success at 16:33:14Z |
+| App build read from served SW | 0.1.0-2026-11-26T16-32-56-776Z-d969a7d3 |
+| Existing configuration | Workers Free static assets; main production integration; workers.dev enabled; version and branch previews disabled |
+
+Provider evidence: publication-provider-corrective.json under the existing Ticket12 evidence root, SHA-256 bd57e572098fbd9a14be5e7165308456b39128fb4febdc4dfccaabfb6dec6287. The [actual build log](https://dash.cloudflare.com/27fba0a74375cd2f57b084513651e03a/workers/services/view/crossdefense/production/builds/fd715b97-34b9-4c03-8753-35a333292b61) records the source and version.
+
+Artifact verifier PID 36320 ran exactly once, exit 0, 16:35:36.790Z to 16:35:42.153Z. Exactly one matching-ID reproduction build passed. Results: 10/10 served files equal reproduced bytes, 9/9 SRI, 6/6 approved packs, 10/10 MIME and 8/8 genuine 404s. Local/feature/production trees matched; executable inputs stayed unchanged. The SW hash was stable before and after proof.
+
+- Evidence: publication-artifacts-02/artifact-verification.json.
+- Evidence SHA-256: 6b15643f2b3476bb2ad7e4a313973ad86717ee0337f4258c73d4b65ed8170f2d.
+- SW SHA-256: ef857ac986077e3d479be704dc8597214bfd1d8a45b8caaa1dc0e5cf9831561e.
+- JS assets/index-CngdCWOF.js SHA-256: 2b498d524c74b7293c98609231c84c15fbe7f423f56383643da13dbfee8e5767.
+
+### Complete Isolated Live Run
+
+The publication-live-02 run used the unchanged audited harness, explicit source/version/AppBuild inputs, Chromium 153.0.8010.12 and a 1366x768 viewport. PID 20016 exited 0. Raw report start: 2026-11-26T16:36:32.482Z; duration: 70.084211 seconds; process runtime: 70.72 seconds.
+
+| Case | Duration | Result |
+| --- | --- | --- |
+| Real worker, offline readiness, Settings persistence and native keyboard | 15.493 s | PASS |
+| Offline earned victory, paired headless parity, Salvage, Review and durable reload | 36.937 s | PASS |
+| Committed-loot interruption and repeated recovery | 16.591 s | PASS |
+
+Exactly three cases ran once with one worker, zero retries and repeat one. Skipped, unexpected, flaky and global errors were all zero. Every startup/reload diagnostic had the expected App build, secure origin, activated/control worker at /sw.js, root scope, nine current-build cache entries, all six packs and ready:true with missing:[]. Offline reloads observed navigator.onLine:false.
+
+The first case preserved Settings remapping and Pilot identity across offline reload, restored defaults, and exercised native-clock movement, Settings pause, explicit Resume/focus restoration and hard drop. Its four genuine 404 probes remained classified as expected. Across all three contexts there were zero page exceptions and zero failed requests. This is not a blanket assertion that every console warning is absent.
+
+The played loop earned its data through public UI. Existing deterministic RAF/UUID helpers controlled the two gameplay cases; the first case used native time. The loop used content development-review-ship-v1, ruleset development-combat-ruleset-v1, digest 1b496a087a3c9f576164c83653736dbd40f6d749eeea9adffa5cda3fc127b9b6, seed 00000007-0000-4000-8000-000000000004 and startup Build revision 4. Twenty-one batches contained 198 ordered inputs. The Boss was observed; Victory occurred at tick 3673 with 20 actual collected payloads.
+
+Same-run browser/headless SHA-256 agreed:
+ef5a8bc7109b91d4caa7160dae631710fe2e8fc728ffe472867f4b96d6f44459.
+Only recordedAt wall-clock metadata was excluded. This is paired semantic parity, not a claim that independently generated local/live Run identities have the same digest.
+
+Public Results, Salvage and Review produced 26 Credits / 1 Celestium. Exactly one settlement, one Cargo operation, one Review occurrence and one Review reward survived offline reload; Run/economy/operation/reward records were unchanged.
+
+The interruption case had four committed payloads at tick 15. Recovery recorded exactly one interrupted outcome, null terminal tick and lastCommittedTick:15, preserved the four payload IDs and economy, and produced zero settlements, Review occurrences or Review rewards. A second offline reload left the recorded state unchanged.
+
+### Evidence, Visual Inspection And Cleanup
+
+All runtime evidence remains under:
+C:\Users\Admin\AppData\Local\CrossDefenseTaskEvidence\Ticket12-20261126\publication-live-02.
+
+browser-results.json is 356,705 bytes, SHA-256 a2c41e8a640195304217cb87a97d1cd568169604debcf7b0a601872fc9a02f80. live-console.log, per-case runtime/audit/cleanup JSON, parity/input/durable-save/recovery diagnostics and three original trace ZIPs are retained. Trace sizes are 24,106,999 / 28,261,726 / 25,192,022 bytes.
+
+Root inspected all six actual PNGs: native final state, offline Pilot chooser, Victory, Review reward, completed Build and interrupted Build. Four are 1366x768; the chooser is a full-page 1366x816 capture and Review is full-page 1366x896. The taller images do not prove no-scroll fit. Visible balances, outcome/recovery text, readiness and final Build controls agree with diagnostics.
+
+All three cleanup records observed the context close event, a closed page, removal from the owned browser and zero remaining owned contexts. ordinaryUserProfilesUsed:false. The final context closed at 2026-11-26T16:37:42.327Z. Normal user browser data was untouched. No production cache entry was deliberately deleted/corrupted and no quota override was applied. A separate post-run check at 16:44:49.8684036Z found no matching task Node or isolated Playwright Chromium processes and no listeners on owned ports 4188/4241/4242/8787/9230.
+
+T12-PUB-INDEX-01 is Closed/Fixed/Verified: causal local Wrangler RED/probe/GREEN, the durable negative/positive regression, full R5/gate05 and actual corrected-production coherence all pass. Production did not repeat destructive cache-fault injection. Historical live01 remains failed; live02 consumed the intentional 404 bodies while retaining the strict failed-request audit and passed all three cases. This supports the harness correction without rewriting live01.
+
+SEC-F01 remains Open/non-blocking: eight affected dependency entries, six Moderate and two High. User acceptance remains Accepted without implying separate acceptance of the corrective code, full MVP, asset-rights clearance, general release or Ticket02/03 acceptance. Final documentation publication and verification of its resulting build are the remaining closeout operations.

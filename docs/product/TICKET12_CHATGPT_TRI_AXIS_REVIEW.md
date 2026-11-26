@@ -1,9 +1,9 @@
 # Ticket12 ChatGPT Tri-Axis Review
 
 Date: 2026-11-26 (Asia/Bangkok)
-Status: Fresh full R5 Standards PASS, Spec PASS, Architecture PASS and Security GREEN/PASS; separate complete ordered gate05 and evidence/cleanup PASS. T12-R5-CS-STD-01 is Fixed/Verified; SEC-F01 remains Open/non-blocking. User acceptance remains Accepted. Corrective publication and actual production verification are pending.
+Status: Fresh full R5 Standards PASS, Spec PASS, Architecture PASS and Security GREEN/PASS; separate complete gate05 PASS; authorized corrective publication, exact production artifacts and three isolated live cases PASS. T12-PUB-INDEX-01 and T12-R5-CS-STD-01 are Fixed/Verified; SEC-F01 remains Open/non-blocking. User acceptance remains Accepted. Final documentation publication is in progress.
 
-## Authority And Method
+## Historical Initial Development Review Authority And Method
 
 This is the authorized ChatGPT-only review of Ticket12 development changes against original fixed point 0fd3f7bf67c1662f01d8449f4623518b69f06a92, on feature/ticket12-offline-recovery in the existing Windows checkout. No provider review, review credentials, suspended orchestration, source snapshot/export or replacement source inventory is used. No staging, commit, push, merge, deployment or Cloudflare configuration mutation is authorized.
 
@@ -112,7 +112,7 @@ The Code/Spec reviewer was one isolated reviewer returning two distinct assessme
 All supported prior production/test corrections are Fixed and Verified within the reviewed scope. SEC-F01 remains Open/non-blocking; the fresh read-only audit still returned exit 1 with eight affected package entries, six Moderate and two inherited High. No risk acceptance or audit-clean claim is made. T12-R1-CS-VER-01 remains Open until the separate fresh complete ordered executable gate, current evidence/screenshot inspection and owned-resource cleanup finish. R4 PASS does not itself establish integrated verification, user acceptance or publication authority.
 
 
-## Final Integrated Gate Disposition
+## Historical Post-R4 Integrated Gate Disposition
 
 The fresh full R4 review and the subsequent complete ordered executable gate are complete. T12-R1-CS-VER-01 is Resolved and Verified: typecheck, the explicit 336/336 headless selection in 37 files, all 217/217 selected development cases in 36 files, a fresh default production build and Wrangler dry-run, all 130/130 selected production cases in 13 files, fresh A/B variants, and all 19/19 native cases in four files passed in the final-*-04 chain. All browser cases ran once with worker 1, retries 0 and repeatEach 1; skipped, flaky, unexpected, result errors and global errors are zero.
 
@@ -133,7 +133,7 @@ The user explicitly accepted the completed Ticket12 result after the engineering
 
 After the accepted engineering and acceptance checkpoints above, the user explicitly authorized Ticket12 publication and completion of production verification. This supersedes their earlier no-publication boundary without changing historical results, raw review reports, SEC-F01 or ticket-specific acceptance limits. The [publication plan](../plans/active/ticket12-publication-live-verification.md) owns the rollout and actual live proof; no new runtime execution is claimed by this authority update.
 
-## Publication Compatibility Finding And Fresh R5 Gate
+## Historical Publication Compatibility Finding And Fresh R5 Gate
 
 After the accepted R4 candidate was published, actual Cloudflare resource verification exposed T12-PUB-INDEX-01: the provider's canonical index redirect is incompatible with redirect:error during explicit index-cache repair. An isolated actual-Wrangler RED and native-worker probe established the cause; a durable native regression failed at that same missing-index assertion before the fix.
 
@@ -208,3 +208,13 @@ No executable file changed after R5. No fresh review is claimed for routine
 post-review evidence-record updates. SEC-F01 remains Open/non-blocking.
 The local engineering gate is GREEN; corrected publication and actual
 production proof are still separate pending operations.
+
+## Subsequent Production Disposition
+
+The unchanged R5/gate05 executable candidate was committed as 143d0ca0acbef9f5d1872ced74d8a15bfb48c088 and merged through PR #7 as b69c2972570e8e67807cba5348f487e409469e55. The observed Cloudflare build fd715b97-34b9-4c03-8753-35a333292b61 activated version 4c1c1b8a-1c52-41c3-98a8-49f00c7daf11 at 100% traffic, serving AppBuild 0.1.0-2026-11-26T16-32-56-776Z-d969a7d3.
+
+Independent exact-artifact proof PASS: 10 files, nine SRI entries, six packs, ten MIME checks and eight genuine 404 boundaries. Actual isolated production runtime PASS: all three cases, once each, covering native offline/Settings/keyboard, earned full loop with 198-input paired parity and durable once-only rewards, and committed-loot interruption with idempotent recovery. Root inspected six current PNGs; all owned contexts closed. The verification record contains exact hashes and scope limits. Runtime evidence supplements R5; it is not presented as a new independent code-review round.
+
+All fifteen raw reports remain verbatim. Corrective staging selected exactly eleven paths and verified canonical Git content. The full whitespace check reported twelve original two-space Markdown hard breaks in the raw R5 Code/Spec and Security reports; the check excluding only raw reports passed. This is a preserved-report formatting exception, not an all-files whitespace PASS.
+
+T12-PUB-INDEX-01 is Closed/Fixed/Verified within the recorded local fault proof and non-destructive live scope. T12-R5-CS-STD-01 remains Fixed/Verified. SEC-F01 remains Open/non-blocking and the audit remains non-clean (eight entries, six Moderate/two High). User acceptance remains Accepted; no separate corrective-code acceptance, full release assurance or suspended-operation authority is inferred. Final documentation publication and verification are tracked by the publication plan.

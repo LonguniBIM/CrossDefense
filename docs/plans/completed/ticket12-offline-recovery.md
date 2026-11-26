@@ -4,13 +4,13 @@ Date: 2026-11-26 (Asia/Bangkok)
 
 ## Status
 
-Engineering work complete. Implementation, the fresh full R4 ChatGPT tri-axis review and the subsequent complete ordered executable gate passed. Current diagnostics/screenshots were inspected and owned-resource cleanup was verified. User acceptance was explicitly granted on 2026-11-26; publication is explicitly authorized; live verification is pending. The accepted live deployment remains Ticket11.
+Original development engineering work is complete: fresh full R4 and its complete ordered gate passed, followed by explicit user acceptance. The subsequent authorized publication found and corrected a canonical-index compatibility issue; fresh full R5, complete gate05, corrective publication and all three production cases now PASS. Ticket12 is live. Current publication identities and remaining closeout-record work are recorded in the publication plan linked below.
 
 ## Outcome
 
 Complete the approved durable slice through a real production service worker: successful cache preparation, offline create/continue, Pre-Run, Build, Attempt, result/Salvage, optional Review, and return to Build. Preserve committed progress, recover interruptions through the existing lifecycle, stage App updates until a safe entry/Build boundary, and retain immutable pinned content.
 
-## Context And Authority
+## Historical Initial Context And Authority
 
 - The user's Ticket12 new-session instruction explicitly accepts the completed Ticket11 Cloudflare deployment and lifts Ticket12 ON HOLD for development-only implementation and verification.
 - Read AGENTS.md, docs/WORKFLOW.md, CONTEXT.md, docs/product/IMPLEMENTATION_BREAKDOWN.md (Ticket12), docs/product/IMPLEMENTATION_SPEC.md, docs/product/UX_UI_STATE_MATRIX.md, and the technical/platform/testing architecture.
@@ -72,12 +72,12 @@ Historical checkpoints through the pre-R4 correction: R1 returned Standards FAIL
 
 The fresh full R4 review subsequently passed all axes. The separate post-R4 complete ordered gate passed on the unchanged twenty-four-path executable candidate: typecheck; 336/336 headless cases in 37 files; 217/217 development cases in 36 files; fresh build and Wrangler dry-run; 130/130 production cases in 13 files; fresh A/B builds; and 19/19 native cases in four files. Browser stages used one worker, zero retries and one repeat, with one passed result per case and zero skipped, flaky, unexpected or global errors. Exact stage results, final build identities, diagnostic/screenshot inspection and cleanup evidence are recorded in development verification. Earlier failed runs remain failed historical evidence.
 
-## Result
+## Historical R4 Engineering Result
 
 Ticket12 is Implemented / Integrated verification PASS / ChatGPT tri-axis PASS (fresh full R4) / User acceptance Accepted, development-only. The complete post-R4 ordered gate, current evidence/screenshot inspection and owned-resource cleanup are complete. Historical failed runs and R1-R3 review outcomes are preserved. No Ticket12 staging, commit, push, merge, deployment or production configuration change has occurred. The live production application remains the accepted Ticket11 checkpoint.
 
 
-## User Acceptance — 2026-11-26
+## Historical Acceptance-Only Checkpoint — 2026-11-26
 
 The user explicitly accepted the completed Ticket12 result after the engineering closeout; see the [acceptance record](../../product/TICKET12_ACCEPTANCE_20261126.md). The accepted executable candidate was reconfirmed unchanged before these documentation updates. Publication remains a separate pending authorization because main automatically deploys. No new implementation, runtime test, staging, commit, push, merge or deployment is claimed by this acceptance update.
 
