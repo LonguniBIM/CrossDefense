@@ -1,7 +1,7 @@
 # Ticket12 ChatGPT Tri-Axis Review
 
 Date: 2026-11-26 (Asia/Bangkok)
-Status: Fresh full R4 review PASS: Standards PASS, Spec PASS, Architecture PASS and Security GREEN/PASS; no new blocker. The subsequent complete ordered executable gate and evidence/cleanup closeout PASS. T12-R1-CS-VER-01 is resolved. SEC-F01 remains Open/non-blocking. User acceptance Accepted on 2026-11-26; publication explicitly authorized; live verification pending. See the [later acceptance record](TICKET12_ACCEPTANCE_20261126.md).
+Status: Fresh full R5 Standards PASS, Spec PASS, Architecture PASS and Security GREEN/PASS; separate complete ordered gate05 and evidence/cleanup PASS. T12-R5-CS-STD-01 is Fixed/Verified; SEC-F01 remains Open/non-blocking. User acceptance remains Accepted. Corrective publication and actual production verification are pending.
 
 ## Authority And Method
 
@@ -132,3 +132,79 @@ The user explicitly accepted the completed Ticket12 result after the engineering
 ## Later Publication Authorization - 2026-11-26
 
 After the accepted engineering and acceptance checkpoints above, the user explicitly authorized Ticket12 publication and completion of production verification. This supersedes their earlier no-publication boundary without changing historical results, raw review reports, SEC-F01 or ticket-specific acceptance limits. The [publication plan](../plans/active/ticket12-publication-live-verification.md) owns the rollout and actual live proof; no new runtime execution is claimed by this authority update.
+
+## Publication Compatibility Finding And Fresh R5 Gate
+
+After the accepted R4 candidate was published, actual Cloudflare resource verification exposed T12-PUB-INDEX-01: the provider's canonical index redirect is incompatible with redirect:error during explicit index-cache repair. An isolated actual-Wrangler RED and native-worker probe established the cause; a durable native regression failed at that same missing-index assertion before the fix.
+
+The narrow repair-only requestWillFetch correction preserves original manifest/cache/SRI identity and strict redirect refusal. Focused typecheck/build, the durable positive/negative regression and the actual-Wrangler GREEN now pass. See the [verification record](TICKET12_DEVELOPMENT_VERIFICATION.md) and [publication plan](../plans/active/ticket12-publication-live-verification.md) for actual commands, failure history, resource cleanup and publication identities.
+
+Fresh full R5 is pending against the unchanged original fixed point 0fd3f7bf67c1662f01d8449f4623518b69f06a92, over the entire current Ticket12 change set. The prior completed initial/full review rounds remain the earlier gates; the new final full round must assess all axes after this corrective batch. It is followed by a separate complete ordered executable gate and actual corrected-deployment proof. No R5 verdict, final gate or completed production verification is claimed by this update.
+
+## Fresh Full R5 Review And Root Disposition
+
+R5 reviewed the entire Ticket12 change set from the unchanged original fixed point
+0fd3f7bf67c1662f01d8449f4623518b69f06a92, including the publication correction.
+Reviewed HEAD was 5970b2049733e186fb3ed677d9faeb96ada44c31 on
+fix/ticket12-cloudflare-index-repair. Three independent read-only reviewers
+used the same frozen 45 paths; Code/Spec was one isolated reviewer returning
+two distinct assessments, not a claimed independent dual pass.
+
+Root's final check after all three reports, at 2026-11-26T16:03:26.5885237Z,
+confirmed the unchanged full aggregate
+fb99e865531e732c27dbc811fffb46023674ad577b8f4b11aae9adaf11b24669 and
+24-path executable aggregate
+18de1d68f8c02ef4dc8a3c6eadda64faf46f901fcd87e05df357b80fa63e135c.
+Each reviewer independently reproduced both hashes. The index was empty,
+the twelve historical raw reports were unchanged, and all 502 unrelated
+untracked paths remained. No source inventory/export was written.
+
+| Axis | Actual verdict | Complete raw report |
+| --- | --- | --- |
+| Code/Spec | Standards PASS; Spec PASS | [T12-R5-code-spec](../reviews/ticket12/T12-R5-code-spec.md) |
+| Architecture | PASS; no actionable architectural defect | [T12-R5-architecture](../reviews/ticket12/T12-R5-architecture.md) |
+| Security | GREEN / PASS within examined scope | [T12-R5-security](../reviews/ticket12/T12-R5-security.md) |
+
+Root accepted the supported finding T12-R5-CS-STD-01 (Low/non-blocking).
+The current reproduction recipe now uses the 37 tracked headless files once.
+A direct selection check confirmed 37 arguments and 37 distinct paths;
+the historical 36-plus-one recipe and its preceding text were preserved
+exactly. This documentation-only correction changed no executable input.
+No duplicate Vitest execution is inferred from the former redundant argument.
+
+T12-R5-SEC-01 continues SEC-F01 as Open/non-blocking. The permitted fresh
+read-only audit returned exit 1 with eight affected package entries:
+six Moderate and two High. No dependency was changed; no clean audit,
+application exploit or blanket risk acceptance is claimed.
+
+T12-PUB-INDEX-01 is corrected in source and focused native/actual-Wrangler proof.
+The R5 review gate is GREEN. The separately required ordered executable gate
+is running in publication-final-05, followed by corrected publication and
+actual live proof. Review verdicts and the historical gate04 do not replace
+these pending results. All fifteen complete raw R1-R5 reports are retained
+with their original findings and contemporaneous limitations.
+
+## Post-R5 Complete Executable Gate - PASS
+
+The separate gate05 completed after R5 on the unchanged reviewed executable
+aggregate 18de1d68f8c02ef4dc8a3c6eadda64faf46f901fcd87e05df357b80fa63e135c:
+typecheck; 336/336 headless in 37 tracked files; 217/217 development in 36
+files; fresh default build and deployment dry-run; 130/130 production in 13
+files; fresh A/B builds; 20/20 native in four files. All browser cases ran once
+with one worker, zero retries and no skipped/flaky/result/global errors.
+Independent selection and all 33 native-diagnostic audits found no discrepancy.
+
+All 27 SRI entries and 18 pack bodies across the three outputs match; source
+identity, fifteen raw reports, numerical geometry, seven current PNGs and
+owned-resource closure were checked. The native report SHA-256 is
+a5f49c468d6aa0c05f72264beb9b6bb26301a875a26b074142dec599ac545431.
+Detailed actual results and proof limits are in the
+[gate05 verification record](TICKET12_DEVELOPMENT_VERIFICATION.md#complete-post-r5-ordered-gate05---pass).
+
+T12-PUB-INDEX-01 is Fixed and Verified locally, including the native negative
+and positive cases and actual local Wrangler RED-to-GREEN proof.
+T12-R5-CS-STD-01 is Fixed/Verified, with its historical recipe preserved.
+No executable file changed after R5. No fresh review is claimed for routine
+post-review evidence-record updates. SEC-F01 remains Open/non-blocking.
+The local engineering gate is GREEN; corrected publication and actual
+production proof are still separate pending operations.

@@ -4,6 +4,7 @@ export interface Ticket12ServerState {
   variant: 'a' | 'b';
   failPaths: string[];
   corruptPackPaths?: string[];
+  redirectRoot?: boolean;
 }
 
 /** Actual owned-server fault/rollout input. The ephemeral token never enters the browser page. */

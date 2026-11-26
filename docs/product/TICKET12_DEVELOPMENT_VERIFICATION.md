@@ -1,7 +1,7 @@
 # Ticket12 Development Verification
 
 Date: 2026-11-26 (Asia/Bangkok)
-Status: Implementation complete; fresh full R4 review PASS on all axes; the subsequent complete ordered executable gate PASS. Current evidence/screenshots inspected and owned-resource cleanup verified. User acceptance Accepted on 2026-11-26; publication explicitly authorized; live verification pending. See the [later acceptance record](TICKET12_ACCEPTANCE_20261126.md).
+Status: Corrected Ticket12 candidate has fresh full R5 Standards/Spec/Architecture/Security PASS and complete post-R5 gate05 PASS (typecheck; 336 headless; 217 development; 130 production; 20 native; integrity/evidence/cleanup). User acceptance remains Accepted. Corrective publication and actual corrected-production verification are pending.
 
 ## Scope And Starting State
 
@@ -356,7 +356,7 @@ $env:CROSSDEFENSE_T12_EVIDENCE = $ticket12EvidenceRoot
 
 npm.cmd run typecheck
 if ($LASTEXITCODE -ne 0) { throw 'Typecheck failed.' }
-$ticket12ProductTests = @(git ls-files -- 'tests/headless/*.test.ts') + @('tests/headless/ticket12-update-boundary.test.ts')
+$ticket12ProductTests = @(git ls-files -- 'tests/headless/*.test.ts')
 npm.cmd test -- @ticket12ProductTests --maxWorkers=1 --reporter=default --reporter=json "--outputFile.json=$ticket12EvidenceRoot\headless-results.json"
 if ($LASTEXITCODE -ne 0) { throw 'Selected headless tests failed.' }
 
@@ -402,3 +402,212 @@ After the complete engineering closeout above, the user explicitly accepted Tick
 ## Later Publication Authorization - 2026-11-26
 
 After the accepted engineering and acceptance checkpoints above, the user explicitly authorized Ticket12 publication and completion of production verification. This supersedes their earlier no-publication boundary without changing historical results, raw review reports, SEC-F01 or ticket-specific acceptance limits. The [publication plan](../plans/active/ticket12-publication-live-verification.md) owns the rollout and actual live proof; no new runtime execution is claimed by this authority update.
+
+## Publication Compatibility Correction - 2026-11-26
+
+The accepted R4 candidate was published through PR #6 as 5970b2049733e186fb3ed677d9faeb96ada44c31. The existing Cloudflare integration deployed build ac183c83-0570-47b6-96c2-bcf717c90dce / version 7daa3a84-1255-465a-95ad-3d9b7ba34a58 successfully. A one-build, matching-ID reproduction verified all ten served files exactly, all nine SRIs and all six packs. Actual source/provider/runtime evidence and current publication authority are in the [active publication plan](../plans/active/ticket12-publication-live-verification.md).
+
+T12-PUB-INDEX-01 was then reproduced locally against actual Wrangler static-assets routing: /index.html returns 307 to /. After removing only an owned local index entry, public Retry left it missing because repair deliberately rejects redirects. Read-only native-worker probes showed that redirect:error failed while follow returned the correct 417-byte document/SRI. No production cache was modified. The original RED/probe evidence remains in publication-repair-diagnosis-01.
+
+The bounded correction adds a repair-only requestWillFetch hook for a message-event GET with redirect:error and the exact scope index.html URL. Its network request uses scope.href while Workbox retains the original request/cache key and manifest SRI. Request cloning preserves strict redirect rejection, credentials, cache mode, integrity and abort signal; all existing scope, size, timeout, activation, content and Player Data boundaries remain. No Wrangler policy, manifest URL, dependency or gameplay change is made.
+
+The owned loopback fixture now models the provider's canonical index redirect after the existing explicit failure override. Its token-protected control adds an optional bounded boolean root-redirect fault, reset on every control update. One real-worker regression creates a Pilot through UI, removes only its local index key, proves refusal of a further redirect even to the correct HTML bytes, then requires normal Retry to restore the same key/SRI and complete cache, preserve all other entries and Player Data, and reload the Pilot offline.
+
+Focused evidence on the corrected candidate:
+
+| Proof | Actual result |
+| --- | --- |
+| Durable regression before the source fix | 1 selected case failed at the exact missing-index recovery assertion; publication-index-red-01; original report/trace retained |
+| Typecheck and fresh corrected build | PASS, process 39160 exit 0; build ticket12-index-repair in publication-repair-build-01 |
+| Same durable regression after the fix | 1/1 PASS, one worker/attempt, retries 0; 2.632 s case / 3.801 s report; no skipped, unexpected, flaky or global errors |
+| Negative redirect phase | Canonical root 302 target is 200 with correct SRI, but Retry refuses the redirect and preserves the eight entries, controller and complete Player Data |
+| Positive repair phase | Same worker/build, original index key/body/SRI restored, other eight entries unchanged, nine entries ready; Pilot persists through offline reload |
+| Actual local Wrangler scenario | GREEN, exit 0, 3.61 s; public Retry fetches GET / and restores the original revisioned index.html cache key |
+| Owned resource cleanup | Native port 4188 and Wrangler ports 8787/9230 free; isolated browsers/contexts closed |
+
+The actual-Wrangler GREEN JSON is publication-repair-diagnosis-01/green-01-result.json, SHA256 edaed307f69ace74e064f22ee45bd774d14d4336796ae3bd4a759275bf1c494e. Native proof is publication-index-green-01/browser-results.json, with two original inline JSON diagnostics and the current offline Pilot screenshot. These paths are relative to the existing C-drive Ticket12 evidence root. The first live browser run publication-live-01 remains failed at its intentional-404 request audit; no success is inferred for its two unexecuted cases.
+
+The original Ticket12 fixed point remains 0fd3f7bf67c1662f01d8449f4623518b69f06a92. A fresh full R5 review and a subsequent complete ordered executable gate are pending for this corrected candidate. All prior R1-R4 reports, failures, accepted gate04 results and SEC-F01 remain unchanged historical evidence. Actual production verification of the corrected deployment is also pending.
+
+## Fresh Full R5 Checkpoint
+
+The complete corrected Ticket12 slice received fresh independent Standards PASS,
+Spec PASS, Architecture PASS and Security GREEN/PASS. Root confirmed the
+45-path freeze unchanged after all reports at 2026-11-26T16:03:26.5885237Z.
+The original fixed point remains 0fd3f7bf67c1662f01d8449f4623518b69f06a92;
+the corrected 24-path executable aggregate is
+18de1d68f8c02ef4dc8a3c6eadda64faf46f901fcd87e05df357b80fa63e135c.
+See the [R5 synthesis and complete raw reports](TICKET12_CHATGPT_TRI_AXIS_REVIEW.md#fresh-full-r5-review-and-root-disposition).
+
+T12-R5-CS-STD-01 was a Low/non-blocking documentation finding. Only the current
+reproduction block was corrected to use the 37 tracked headless files once.
+Direct evaluation confirmed 37 arguments and 37 distinct paths, and preserved
+the entire preceding historical text and its 36-plus-one selector. No
+executable file changed after the review. SEC-F01 remains Open/non-blocking;
+the fresh R5 audit again returned exit 1 with six Moderate and two High entries.
+
+Root visually inspected the focused corrected screenshot
+publication-index-green-01/traces/ticket-12-offline-canonica-28c4e-s-the-same-worker-and-Pilot/canonical-index-offline-pilot.png.
+The full-page PNG is 1366 x 816 from a 1366 x 768 test viewport. It shows
+Ready offline - playing without network, ticket12-index-repair, the preserved
+Canonical index recovery Pilot/Continue card and the complete chooser controls.
+This is not a no-scroll Pilot chooser assertion.
+
+The separate full ordered gate started at 2026-11-26T16:03:42.0556599Z, process
+38636, with new evidence under publication-final-05. Typecheck passed and
+336/336 headless cases passed in 37 files (23.50 seconds). The complete
+217-case development stage is running; subsequent default-build/dry-run,
+130-case production, fresh A/B and 20-case native stages remain pending.
+No historical/focused results are substituted for this chain.
+
+## Complete Post-R5 Ordered Gate05 - PASS
+
+The current corrected executable candidate completed the entire ordered gate
+after fresh full R5. No executable/configuration/test file changed after that
+review. The final post-run check at 2026-11-26T16:27:00.4603125Z reconfirmed
+the 24-path aggregate
+18de1d68f8c02ef4dc8a3c6eadda64faf46f901fcd87e05df357b80fa63e135c,
+all fifteen unchanged raw reports, empty index and 502 unrelated untracked
+paths plus the three new R5 reports. The earlier R5 paragraphs are gate-start
+checkpoints; the following results supersede their pending execution status.
+
+Evidence root for this complete chain:
+C:\Users\Admin\AppData\Local\CrossDefenseTaskEvidence\Ticket12-20261126\publication-final-05.
+
+| Ordered stage | Actual result | Native process and evidence |
+| --- | --- | --- |
+| Typecheck | PASS | Stage1, npm.cmd run typecheck |
+| Explicit tracked headless selection | 336/336 PASS in 37 files; 23.50 s | headless-results.json; all four Ticket12 boundary cases occur once |
+| Complete selected development browser regression | 217/217 PASS in 36 files; 511942.338 ms | development/browser-results.json; stage1 PID 38636 exit 0, 538.83 s, completed 16:12:39.4470131Z |
+| Fresh default build and Wrangler deployment check | PASS | Stage2; dry-run explicitly exits without deployment |
+| Complete selected production browser regression | 130/130 PASS in 13 files; 470733.781 ms | production/browser-results.json; stage2 PID 35624 exit 0, 475.38 s, completed 16:20:48.4013893Z |
+| Fresh A/B builds | PASS | New absent-guarded build-a and build-b directories |
+| Complete native offline/update selection | 20/20 PASS in four files; 173933.155 ms | native/browser-results.json; stage3 PID 12208 exit 0, 177.39 s, completed 16:24:03.2954061Z |
+
+Every browser case has exactly one passed result, worker/parallel/retry index
+zero, with one configured worker, retries zero and repeat one. Skipped,
+unexpected, flaky, result errors and global errors are zero. The independent
+selection audit found no missing, extra or duplicate file/case identities:
+headless matches all 37 tracked product files; development and production
+match the intended selections and all corresponding gate04 case identities.
+Native retains all nineteen prior cases and adds exactly the canonical-index
+regression: offline four, updates eleven, lifetime three and Content Retry two.
+
+The complete execution logs are stage1-typecheck-headless-development.log,
+stage2-build-dry-run-production.log and stage3-build-ab-native.log. Exact JSON
+SHA-256 values:
+
+| Report | SHA-256 |
+| --- | --- |
+| Headless | eadff1f05c857bf0383d7a01407aadd1b09f7719b656cb3703fd03c46eecc3e2 |
+| Development | 26033a334403c03b90780d84a8ba569de9db5bf77caa00ee8fc06aa44b73788c |
+| Production | ee4ca1c9fb46f5505d2e522a684c190c7b03a8a78c0088fb039a3935264c4377 |
+| Native | a5f49c468d6aa0c05f72264beb9b6bb26301a875a26b074142dec599ac545431 |
+
+### Fresh Compiled Integrity
+
+Independent inspection at 16:25:42.862Z verified 27/27 embedded SRIs across
+the default, A and B builds. Each has exactly ten regular files, nine unique
+precache entries and six approved packs. All eighteen pack bodies are
+byte-identical to their approved repository manifests; HTML references the
+correct inspected JS/CSS. No test-control or fixture markers were found.
+
+The actual App/SW identities are
+0.1.0-2026-11-26T16-12-54-059Z-618f6c48 (default),
+ticket12-a and ticket12-b. The largest entry is 14006953 bytes, below the
+16777216-byte bound. CSS is byte-identical across all three, SHA-256
+2484dc76dbe1a7069bab65bed61cbc68c5592c381de31fbd3126caf6472c56ca.
+After replacing only each actual App build ID (six occurrences per build),
+JS is identical with normalized SHA-256
+7dd5d947f00baf53fad0579074241aa5c61c316df0968d7022d15ec707bdf303.
+This normalization is scoped provenance evidence, not a raw-byte identity claim.
+
+The existing large-JS-chunk and inlineDynamicImports deprecation warnings
+remain. A/B builds also report their intentionally new external output
+directories. Wrangler's Read 19 files includes recursive directory entries;
+the independently counted regular runtime files are ten. No warning-clean
+or authenticated-deployment claim is made from these local commands.
+
+### Current Native Diagnostics
+
+All 33 uniquely named inline JSON diagnostics were independently decoded and
+examined in memory. The current played-loop diagnostic uses App 0.1.0 /
+ticket12-a, Chromium 153.0.8010.12, development-review-ship-v1,
+development-combat-ruleset-v1, content digest
+1b496a087a3c9f576164c83653736dbd40f6d749eeea9adffa5cda3fc127b9b6
+and seed 00000007-0000-4000-8000-000000000004.
+Its 21 batches contain 198 ordered inputs. Victory occurs at tick 3673,
+with twenty unique payloads. Browser/headless semantic digest:
+044c67150d9e0ab54945a868e1d58e8f5d065ced22d99bf69095a63af590dd9a.
+Equality applies within this same startup/input record, excluding recordedAt;
+no cross-run digest identity is inferred.
+
+The complete passing case establishes once-only settlement, sixteen kept
+payloads plus eight starters, final retained count 24, and Review changing
+24 Credits/1 Celestium to 26 Credits/1 Celestium, preserved through reload.
+Those reward assertions are separate from the bounded inline outcome summary.
+Interruption retains four committed payloads at tick 15, produces one
+interrupted outcome after repeated recovery, leaves economy unchanged and
+creates zero Review occurrences.
+
+The new canonical-index case first refuses a further 302 whose terminal 200
+document has the correct SRI, preserving the other eight entries and complete
+Player Data. Normal Retry then restores the same revisioned index key, same
+controller/cache and all nine verified entries, followed by offline Pilot
+reload. The original key ends in
+index.html?__WB_REVISION__=461ee3c628835fec510cfebb7309765a;
+its 417-byte body has SRI
+sha256-6qSljjkW0P8iVEGSy6IY8PS+yNy92SOqs2G0Hdz1/CM=.
+
+Native hold durations are 16516 ms before skipWaiting, 16524 ms during
+activation and 16517 ms before genuine refusal. Real pointer-input attempts
+leave full Player Data equal while the root is inert. Success observes a new
+B document and activated controller; refusal restores the same A document,
+then genuine Undo advances revision 5 to 6. Individual controls need not have
+disabled=true: the tested boundary is the inert root plus application hold.
+
+Canceled Content Retry records one content publication, zero Review writes
+and exact Player Data equality after drain. Current Retry records one
+ensure-review write and waits for its trusted acknowledgment. Seven persisted
+tables remain equal through safe A-to-B update and offline Continue.
+The quota case measures usage 43381113 and quota 44429689 bytes, exactly
+1 MiB headroom; its intentional QuotaExceededError preserves A and Player Data.
+The complete case verifies later reset/cleanup; its inline snapshot captures
+the imposed quota. LKG, old pins, failed Build/Settings writes, second-window
+admission and same-waiting-worker repair all passed their complete cases.
+
+### Visual Evidence, Geometry And Cleanup
+
+Root viewed seven fresh PNGs in native/traces: Combat at 1280x720, 1366x768
+and 1920x1080; minimum Build during the delayed update; reference Build after
+refusal/Undo; maximum Build with a staged update; and the canonical-index
+offline Pilot. The six Combat/Build PNGs exactly match their viewports.
+The Pilot image is a full-page 1366x816 capture from a 1366x768 viewport,
+not a no-scroll chooser assertion. These are output files, not separately
+listed JSON attachments.
+
+Independent recalculation found zero violations across fifteen Build and
+three Combat geometry captures. Build document sizes match their viewports;
+Cargo/Equipped/Words bottoms are 704/752/1064 px and grid lettering is 23 px.
+Combat camera/board bottoms match at 540/588/900 px; Harvest bottoms are
+695/743/1055 px; footer bottoms are 689/737/1049 px; all nine Harvest subtypes
+and 15 px receipts remain visible. Existing internal Build feedback scrolling
+is retained; not every long status message is claimed visible simultaneously.
+
+At 16:27:00.4603125Z, post-run check PID 3964 exited 0. No listeners remained
+on owned ports 4188/4241/4242/8787/9230, no matching task Node runtimes remained
+and no Playwright Chromium profile processes remained. Ordinary user browser
+profiles/data and unrelated processes were not cleared or terminated.
+
+### Final Local Disposition
+
+R5 review and the separate complete post-R5 executable/evidence gate are PASS.
+T12-PUB-INDEX-01 is Fixed and Verified locally, including actual local Wrangler.
+T12-R5-CS-STD-01 is Fixed and Verified as a documentation-only correction.
+Corrective publication and actual corrected-deployment verification remain
+pending; neither local proof nor the initial artifact PASS substitutes for them.
+
+All original failed runs, focused RED/probe evidence and raw R1-R5 reports remain
+unchanged. SEC-F01 stays Open/non-blocking with the non-clean R5 audit.
+The isolated Chromium/storage/provenance limitations and all ticket-specific
+acceptance, asset-rights, full-MVP and suspended-operation boundaries remain.

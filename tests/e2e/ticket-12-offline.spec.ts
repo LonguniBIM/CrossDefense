@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test';
+import { createHash } from 'node:crypto';
+import { expectChooser, waitOfflineReady, workerCacheProof } from '../ticket12UpdateFixture';
 import type { ActiveRun } from '../../src/domain/run/run';
 import type { CombatOutcome } from '../../src/domain/combat/collection';
 import { installPreRunTestClock } from '../preRunBrowserPlayer';
@@ -237,4 +239,113 @@ test('offline interruption retains actual committed loot and recovers once witho
     economyUnchanged: true, reviewOccurrenceCount: repeated.tables.reviewOccurrences!.length,
   }, null, 2) });
   await page.screenshot({ path: info.outputPath('offline-interrupted-build.png'), fullPage: true });
+});
+
+test('canonical index redirect Retry repairs only the missing document and preserves the same worker and Pilot', async ({ page, context, request }, info) => {
+  test.setTimeout(120_000);
+  const exceptions: string[] = [];
+  page.on('pageerror', error => exceptions.push(error.message));
+  const direct = await request.get('/index.html?ticket12-index-repair=1', { maxRedirects: 0 });
+  expect(direct.status()).toBe(307);
+  expect(direct.headers().location).toBe('/?ticket12-index-repair=1');
+  await direct.body();
+  const terminalPath = '/__ticket12_terminal_index';
+  for (const path of [terminalPath, '/ticket12-index-unknown', '/src/main.ts']) {
+    expect((await request.get(path, { maxRedirects: 0 })).status()).toBe(404);
+  }
+  await page.goto('/'); await expectChooser(page);
+  expect(new URL(page.url()).hostname).toBe('127.0.0.1');
+  const buildId = await waitOfflineReady(page);
+  const nickname = 'Canonical index recovery Pilot';
+  await page.getByLabel('Nickname').fill(nickname); await page.getByTestId('create-pilot').click();
+  const pilot = page.getByTestId('pilot-card').filter({ hasText: nickname });
+  await expect(pilot).toHaveCount(1);
+  const beforePlayer = await inspectResultsSave(page);
+  const snapshot = () => page.evaluate(async buildId => {
+    const names = (await caches.keys()).filter(name => name.endsWith('-' + buildId));
+    if (names.length !== 1) throw new Error('Expected one isolated current-build cache.');
+    const cacheName = names[0]!, cache = await caches.open(cacheName);
+    const entries = await Promise.all((await cache.keys()).map(async key => {
+      const response = await cache.match(key);
+      if (!response) throw new Error('A listed cache response disappeared.');
+      const body = await response.arrayBuffer();
+      const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', body));
+      return { key: key.url, pathname: new URL(key.url).pathname, status: response.status,
+        integrity: response.headers.get('X-CrossDefense-Integrity'),
+        bodyIntegrity: 'sha256-' + btoa(String.fromCharCode(...digest)), bytes: body.byteLength };
+    }));
+    return { cacheName, entries: entries.sort((a, b) => a.key.localeCompare(b.key)) };
+  }, buildId);
+  const beforeCache = await snapshot();
+  expect(beforeCache.entries).toHaveLength(9);
+  const index = beforeCache.entries.find(entry => entry.pathname === '/index.html')!;
+  expect(index).toBeDefined(); expect(index.integrity).toMatch(/^sha256-[A-Za-z0-9+/]{43}=$/);
+  for (const entry of beforeCache.entries) {
+    expect(entry.status).toBe(200); expect(entry.bodyIntegrity).toBe(entry.integrity);
+  }
+  const otherEntries = beforeCache.entries.filter(entry => entry.key !== index.key);
+  expect(otherEntries).toHaveLength(8);
+  const controller = await page.evaluateHandle(() => navigator.serviceWorker.controller);
+  try {
+    const removed = await page.evaluate(async ({ cacheName, key }) => {
+      if (location.hostname !== '127.0.0.1' || new URL(key).origin !== location.origin
+        || new URL(key).pathname !== '/index.html') throw new Error('Cache loss is confined to this loopback index key.');
+      return (await caches.open(cacheName)).delete(key);
+    }, { cacheName: beforeCache.cacheName, key: index.key });
+    expect(removed).toBe(true);
+    expect((await snapshot()).entries).toEqual(otherEntries);
+    expect(await workerCacheProof(page)).toEqual({ buildId, ready: false, missing: ['/index.html'] });
+
+    // A real terminal redirect must be refused even though its target has the correct document bytes.
+    await setTicket12ServerState(request, { variant: 'a', failPaths: [], redirectRoot: true });
+    const rootRedirect = await request.get('/', { maxRedirects: 0 });
+    expect(rootRedirect.status()).toBe(302); expect(rootRedirect.headers().location).toBe(terminalPath);
+    const terminal = await request.get(terminalPath, { maxRedirects: 0 });
+    expect(terminal.status()).toBe(200);
+    const terminalIntegrity = 'sha256-' + createHash('sha256').update(await terminal.body()).digest('base64');
+    expect(terminalIntegrity).toBe(index.integrity);
+    await page.getByTestId('offline-retry').click();
+    await expect(page.getByTestId('offline-retry')).toBeEnabled({ timeout: 30_000 });
+    const refused = { proof: await workerCacheProof(page), cache: await snapshot(), player: await inspectResultsSave(page) };
+    await info.attach('canonical-index-redirect-refused.json', { contentType: 'application/json', body: JSON.stringify({
+      buildId, directStatus: direct.status(), canonicalLocation: direct.headers().location,
+      rootStatus: rootRedirect.status(), terminalStatus: terminal.status(), terminalIntegrity, originalIndex: index, ...refused,
+    }, null, 2) });
+    expect(refused.proof).toEqual({ buildId, ready: false, missing: ['/index.html'] });
+    expect(refused.cache.entries).toEqual(otherEntries);
+    expect(refused.player).toEqual(beforePlayer);
+    expect(await controller.evaluate(original => original === navigator.serviceWorker.controller)).toBe(true);
+    await expect(page.getByTestId('offline-status')).not.toContainText('Ready offline');
+
+    await setTicket12ServerState(request, { variant: 'a', failPaths: [] });
+    expect((await request.get(terminalPath, { maxRedirects: 0 })).status()).toBe(404);
+    await page.getByTestId('offline-retry').click();
+    await expect(page.getByTestId('offline-retry')).toBeEnabled({ timeout: 30_000 });
+    const repaired = { proof: await workerCacheProof(page), cache: await snapshot(), player: await inspectResultsSave(page),
+      sameController: await controller.evaluate(original => original === navigator.serviceWorker.controller),
+      status: await page.getByTestId('offline-status').innerText() };
+    await info.attach('canonical-index-repair-result.json', { contentType: 'application/json', body: JSON.stringify({
+      buildId, originalIndex: index, beforePlayer, otherEntries, ...repaired,
+    }, null, 2) });
+    expect(repaired.sameController).toBe(true);
+    await expect(page.getByTestId('offline-app-version')).toHaveAttribute('data-app-build', buildId);
+    expect(repaired.player).toEqual(beforePlayer);
+    expect(repaired.cache.entries.filter(entry => entry.key !== index.key)).toEqual(otherEntries);
+    expect(exceptions).toEqual([]);
+    expect(repaired.proof, 'Public Retry must repair the original index key through the canonical root without following further redirects.')
+      .toEqual({ buildId, ready: true, missing: [] });
+    expect(repaired.cache.entries.find(entry => entry.key === index.key)).toEqual(index);
+    expect(repaired.cache.entries).toHaveLength(9);
+    await waitOfflineReady(page);
+    await context.setOffline(true); await page.reload(); await expectChooser(page);
+    expect(await waitOfflineReady(page)).toBe(buildId);
+    await expect(pilot).toHaveCount(1);
+    expect(await inspectResultsSave(page)).toEqual(beforePlayer);
+    expect(await page.evaluate(() => navigator.onLine)).toBe(false);
+    expect(exceptions).toEqual([]);
+    await page.screenshot({ path: info.outputPath('canonical-index-offline-pilot.png'), fullPage: true });
+  } finally {
+    await controller.dispose();
+    await setTicket12ServerState(request, { variant: 'a', failPaths: [] });
+  }
 });
