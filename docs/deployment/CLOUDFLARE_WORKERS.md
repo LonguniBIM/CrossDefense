@@ -5,11 +5,12 @@
 Deploy the accepted Ticket11 application as static files on the Cloudflare
 Workers Free plan. The user selected this destination on 2026-11-26.
 
-Repository preparation and account connection are separate checkpoints. The
-current execution record is
-[the deployment plan](../plans/active/cloudflare-static-deployment.md).
-A production URL and successful provider deployment must be observed before
-the rollout is described as live.
+The production application is live at
+[https://crossdefense.dklong2308.workers.dev](https://crossdefense.dklong2308.workers.dev).
+The Cloudflare dashboard showed Workers Free ($0), the selected GitHub repository,
+and a successful production deployment. See
+[the completed deployment record](../plans/completed/cloudflare-static-deployment.md)
+for source identity, provider evidence, live verification and known limits.
 
 Ticket12 offline caching and update behavior remain ON HOLD. Player state stays
 in browser-local IndexedDB; hosting does not add cloud accounts or save sync.
@@ -32,7 +33,9 @@ runtime secret is needed for this static deployment.
 
 wrangler.jsonc serves ./dist. It has no main entry point, ASSETS binding,
 run_worker_first setting or SPA fallback. Missing content paths must remain
-ordinary 404 responses.
+ordinary 404 responses. Explicit workers_dev: true keeps the production hostname
+enabled; preview_urls: false keeps version/preview URLs disabled. Branch preview
+builds are separately disabled in Workers Builds.
 
 Vite retains its existing root-relative /content/packs/... URLs. Publish at the
 root of the provider hostname rather than a project subdirectory.
@@ -91,13 +94,18 @@ Stop only the verification process that this run created.
 | Deploy command | npx wrangler deploy |
 | Node version | 24.13.1 from .node-version |
 | Branch preview builds | Disabled for the initial rollout |
+| Production workers.dev URL | Enabled |
+| Version/preview URLs | Disabled |
 
 5. Keep Cloudflare's managed deployment-token option. Do not paste passwords,
    one-time codes or API tokens into source files or chat.
 6. Save and deploy. Inspect dependency installation, build and deploy logs.
    Record the exact source commit, provider deployment identifier and assigned
    HTTPS workers.dev URL in the execution record.
-7. Verify the live URL using the checks below.
+7. Open Domains and verify that Production Worker URL is enabled and Preview
+   URLs is disabled. A Ready deployment with no enabled URL is not publicly
+   reachable. Keep these values aligned with wrangler.jsonc.
+8. Verify the live URL using the checks below.
 
 Dashboard labels may change. The essential destination is Workers Static
 Assets, with the existing Wrangler configuration and the existing repository.
@@ -122,15 +130,22 @@ check is finished; do not clear the user's normal browser data.
 
 ## Updates and recovery
 
-With the GitHub connection active, changes to main trigger a production build
-and deployment. Keep branch preview builds disabled for this initial rollout.
+The connected repository is LonguniBIM/CrossDefense and the production branch is
+main. Changes to main trigger a production build and deployment. Confirm the
+new commit and Ready deployment in Cloudflare before reporting an update as
+live; GitHub can have no check/status entry for an initial manual build.
+Keep branch preview builds disabled for this initial rollout.
 If previews are intentionally enabled later, current Workers Builds uses
 npx wrangler preview as its preview command.
 
-Before the first successful deployment there is no previous production version
-to restore. For later failures, use Cloudflare's previously verified deployment
-or revert the offending repository change through the normal main-branch
-workflow. Record the selected version and verify the resulting live URL.
+The first verified production build used main revision
+2bb3619f2a5dd15a6e38ee8bff86eca4e5b1568b and Cloudflare version prefix
+12947570. Its
+[build record](https://dash.cloudflare.com/27fba0a74375cd2f57b084513651e03a/workers/services/view/crossdefense/production/builds/07536199-5f88-4b09-b0da-5fc8d979a899)
+was successful on 2026-11-26. For later failures, use a previously verified
+Cloudflare deployment or revert the offending repository change through the
+normal main-branch workflow. Record the selected version and verify the
+resulting live URL.
 
 A production build must retain the approved immutable content versions. Do not
 delete older content packs while existing Runs can still reference them.
@@ -151,3 +166,5 @@ PWA installation or safe-update behavior as completed.
 - [GitHub integration](https://developers.cloudflare.com/workers/ci-cd/builds/git-integration/github-integration/)
 - [Build image and version overrides](https://developers.cloudflare.com/workers/ci-cd/builds/build-image/)
 - [Static asset billing](https://developers.cloudflare.com/workers/static-assets/billing-and-limitations/)
+- [Production workers.dev routing](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/)
+- [Version URL configuration](https://developers.cloudflare.com/workers/versions-and-deployments/version-urls/)
