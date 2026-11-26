@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 4175",
     "build": "vite build",
+    "deploy:check": "wrangler deploy --dry-run",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
@@ -27,6 +28,7 @@
     "@types/three": "0.186.0",
     "typescript": "7.0.2",
     "vite": "8.3.1",
-    "vitest": "5.0.1"
+    "vitest": "5.0.1",
+    "wrangler": "4.168.0"
   }
 }

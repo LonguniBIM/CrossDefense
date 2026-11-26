@@ -17,12 +17,13 @@ Completed and captured here:
 - evidence-backed technology ADRs and testing seams;
 - UX/UI + Detailed Design, with Shared Understanding confirmed on 2026-09-29.
 
-Current implementation status (2026-11-25):
+Current implementation status (2026-11-26):
 
-- Ticket09 is **Implemented / Integrated verification PASS / User acceptance Accepted**, following exact checkpoint validation and reuse of the complete 19 November gate. See [the acceptance record](docs/product/TICKET09_ACCEPTANCE_20261125.md).
-- Ticket10 is **Implemented / Integrated verification PASS / ChatGPT tri-axis PASS / User acceptance Accepted**, development-only, under approved Q15. The user explicitly accepted it on **2026-11-25 (Asia/Ho_Chi_Minh)**; see [the acceptance record](docs/product/TICKET10_ACCEPTANCE_20261125.md). The approved Learning Entry, exact answer, 1+1 Credit policy and immediate-due occurrence contract remain in [the completed plan](docs/plans/completed/ticket10-review-occurrence.md); actual execution, review findings and limits are in [the verification record](docs/product/TICKET10_DEVELOPMENT_VERIFICATION.md).
-- Ticket11 is the next-session implementation target and has not started in this session; Ticket12 remains **ON HOLD**. Earlier ticket-specific evidence and acceptance remain governed by their own records; Ticket02/03 acceptance is not inferred.
-- The user's current instruction authorizes staging, committing, pushing and merging the completed product work. Content authoring retains its approved ticket-specific gates. Deployment, publication beyond the authorized Git actions, provider reviewers, credential setup, suspended orchestration and WFP/G-R/G-P operations remain unauthorized; the refused snapshot operation remains prohibited.
+- Ticket09 is **Implemented / Integrated verification PASS / User acceptance Accepted**; see [the acceptance record](docs/product/TICKET09_ACCEPTANCE_20261125.md).
+- Ticket10 is **Implemented / Integrated verification PASS / ChatGPT tri-axis PASS / User acceptance Accepted** under approved Q15; see [the acceptance record](docs/product/TICKET10_ACCEPTANCE_20261125.md).
+- Ticket11 is **Implemented / Integrated verification PASS / ChatGPT tri-axis PASS / User acceptance Accepted** under approved Q16. Its Git publication was merged in [PR #3](https://github.com/LonguniBIM/CrossDefense/pull/3); see [the acceptance record](docs/product/TICKET11_ACCEPTANCE_20261126.md).
+- The user selected **Cloudflare Workers Static Assets Free** and authorized deployment of the accepted application. Configuration and verification are tracked in [the deployment plan](docs/plans/active/cloudflare-static-deployment.md); provider account connection and live deployment must be observed before claiming publication.
+- Ticket12 remains **ON HOLD**. Ticket02/03 acceptance is not inferred. Suspended provider review/orchestration, WFP/G-R/G-P and refused-snapshot restrictions remain unchanged.
 
 ## Production application scaffold
 
@@ -32,9 +33,9 @@ See `docs/architecture/TECHNOLOGY_SELECTION_RESULT.md` and `docs/product/IMPLEME
 
 ## Intended next sequence
 
-1. Record the authorized Git publication outcome for the completed product work.
-2. Continue with Ticket11 in a new session using the English implementation prompt.
-3. Keep Ticket12 ON HOLD.
+1. Publish and verify the accepted Ticket11 application on Cloudflare Workers Static Assets Free.
+2. Follow the [deployment guide](docs/deployment/CLOUDFLARE_WORKERS.md) for build settings, account connection, live checks and recovery.
+3. Keep Ticket12 ON HOLD; production offline reload and safe updates are not implemented by this hosting change.
 
 ## High-level architecture
 
@@ -84,4 +85,4 @@ Core principles:
 
 ## Implementation authority
 
-Feature work follows the current ticket-specific authorization and content gates recorded above. Ticket10 user acceptance is Accepted. The completed product work is authorized for stage, commit, push and merge. Ticket11 is the next-session implementation target and has not started in this session; Ticket12 remains ON HOLD. Deployment and suspended operations remain unauthorized.
+Feature work follows the current ticket-specific authorization and content gates recorded above. Ticket11 user acceptance is Accepted. The user authorized commit, push, merge and deployment, and selected Cloudflare Workers Static Assets Free on 2026-11-26. The bounded hosting configuration and main-branch deployment are within that authority. Ticket12 remains ON HOLD, and suspended operations remain outside scope.

@@ -24,5 +24,6 @@ scripts/bin/harness
 scripts/bin/harness.exe
 
 node_modules/
+.wrangler/
 test-results/
 playwright-report/
