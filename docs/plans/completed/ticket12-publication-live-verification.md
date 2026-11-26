@@ -4,11 +4,12 @@ Date: 2026-11-26 (Asia/Bangkok)
 
 ## Status
 
-Active only for final closeout publication. User acceptance and publication
-authorization are satisfied. Initial PR #6 and corrective PR #7 are deployed;
-fresh full R5, complete gate05, exact production artifact proof and all three
-isolated live cases PASS. Publish the current records and verify the resulting
-documentation-only deployment before moving this plan to completed.
+Completed after actual closeout publication and deployment verification.
+User acceptance and publication authorization are satisfied. PR #6, corrective
+PR #7 and closeout PR #8 are published. Fresh full R5, complete gate05, full
+three-case application production proof and the subsequent documentation-only
+artifact/native proof PASS. Final completion-record deployment attestation is
+retained in its pull request before handoff.
 
 ## Outcome
 
@@ -19,7 +20,7 @@ browser contexts, and leave reviewable source/provider/runtime evidence.
 ## Context
 
 - [Acceptance and latest authority](../../product/TICKET12_ACCEPTANCE_20261126.md).
-- [Completed engineering plan](../completed/ticket12-offline-recovery.md).
+- [Completed engineering plan](ticket12-offline-recovery.md).
 - [Contract](../../product/TICKET12_OFFLINE_CONTRACT.md), [verification](../../product/TICKET12_DEVELOPMENT_VERIFICATION.md), [review](../../product/TICKET12_CHATGPT_TRI_AXIS_REVIEW.md).
 - [Consumer deployment runbook](../../deployment/CLOUDFLARE_WORKERS.md).
 - Existing Windows checkout: D:\01_DCMvn\Workspace\CrossDefense.
@@ -83,7 +84,7 @@ release or Ticket02/03 acceptance; unrelated production configuration changes.
 - [x] PR inspection and permitted merge.
 - [x] Successful initial Cloudflare build/deployment attributed to the merged source.
 - [x] Actual HTTPS/artifact/service-worker/offline/recovery proof and cleanup.
-- [ ] Publication of current closeout records and final deployment verification.
+- [x] Publication of current closeout records and resulting deployment verification.
 
 ## Decisions
 
@@ -287,7 +288,7 @@ Historical live01, RED/probe evidence and all raw reviews remain unchanged.
 Detailed identities, source hashes, runtime evidence and limits are in
 the development verification record.
 
-## Current Result After Corrective Production Verification
+## Historical Result After Corrective Production Verification
 
 Ticket12 is accepted, published and verified on production. The original
 acceptance decision is retained without inventing a separate corrective-code
@@ -302,3 +303,43 @@ artifact reproduction and the native-clock HTTPS/offline/Settings/keyboard
 case. The complete three-case gameplay/recovery proof above remains the evidence
 for unchanged behavior; full local regressions are not repeated without a new
 executable risk.
+
+## Final Closeout And Completion
+
+The closeout records were published through PR #8, merge
+4d3f856743ca95a73d12e911611a579a5d8a8f79 at 2026-11-26T16:46:53Z.
+Its Cloudflare build e5ea9dda-4bca-41c8-ac57-82c2f515a93e and full version
+f64b1390-5254-4596-a503-81f1689588f4 became Ready at 100% traffic.
+Observed App build: 0.1.0-2026-11-26T16-47-34-871Z-3c2c88bb.
+The GitHub build check succeeded at 16:47:46Z.
+
+The fresh artifact03 proof passed exactly once at 16:49:36.641Z:
+10 exact files, nine SRI entries, six packs, ten MIME checks and eight real
+404 boundaries. JSON SHA-256:
+8c7c01668dce5279567bb008be210a8685cb9ed9ffe22a44aa14ab851eb68888.
+
+The fresh native-clock live03 case passed once, exit 0, duration 15.133251s,
+with correct build/worker/readiness, offline Settings/Pilot persistence and
+native input. Page exceptions/failed requests/unexpected HTTP errors were zero.
+Context cleanup completed at 16:50:39.514Z with zero owned contexts remaining.
+Report SHA-256:
+b4f8d1ebef25ca2e425ebcb47110e2653e2886ae8bd1e0bf3e1df8e3e238c946.
+
+The detailed provider, artifact and runtime record is in
+[development verification](../../product/TICKET12_DEVELOPMENT_VERIFICATION.md).
+The full three-case proof belongs to the unchanged application checkpoint
+published by PR #7; the later documentation build received the focused
+native case, not an invented repeat of full gameplay/recovery.
+
+The required closeout records were published and their actual deployment
+verified before this plan was moved to completed. All current links and
+statuses now point to the completed plan. The final completion-record PR
+retains its post-merge source/provider/runtime attestation; its resulting build
+must pass the same bounded proof before final handoff. This avoids a recursive
+source commit solely to record its own deployment identifier.
+
+User acceptance stays Accepted. All fifteen raw reports and historical failed
+evidence remain preserved; all 502 unrelated paths and normal browser data
+remain untouched. T12-PUB-INDEX-01 and T12-R5-CS-STD-01 are Fixed/Verified.
+SEC-F01 remains Open/non-blocking. No new numbered implementation ticket,
+full-MVP/general release, asset-rights or Ticket02/03 acceptance is inferred.

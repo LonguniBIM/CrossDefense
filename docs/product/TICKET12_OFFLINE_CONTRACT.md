@@ -1,7 +1,7 @@
 # Ticket12: Offline Slice And Safe Recovery Contract
 
 Date: 2026-11-26 (Asia/Bangkok)
-Status: Approved implementation scope; implementation complete; integrated verification PASS; fresh full R5 ChatGPT tri-axis PASS; user acceptance Accepted on 2026-11-26; publication completed; actual corrected-production artifact and three-case live verification PASS. Final closeout publication is in progress.
+Status: Approved implementation scope; implementation complete; integrated verification PASS; fresh full R5 ChatGPT tri-axis PASS; user acceptance Accepted on 2026-11-26; publication and actual corrected-production artifact/three-case proof PASS. Closeout records are published and their documentation-only deployment verified; publication plan completed.
 
 ## Authority And Publication Boundary
 
@@ -9,7 +9,7 @@ The initial Ticket12 continuation instruction accepted the completed Ticket11 ap
 
 This contract applies the already-approved Ticket12, implementation specification, UX state matrix, technical/platform architecture and ADR 0009. It does not introduce Q17 or reopen content, gameplay, Q16 Workspace settings, hosting or technology selection.
 
-Ticket12 user acceptance and subsequent publication authorization were explicitly granted on 2026-11-26; see the [acceptance record](TICKET12_ACCEPTANCE_20261126.md). Staging, commits, pushes, pull-request creation, merge, deployment through the existing Cloudflare configuration and isolated production verification are authorized. Main is connected to automatic production deployment. Actual rollout evidence belongs in the [publication plan](../plans/active/ticket12-publication-live-verification.md).
+Ticket12 user acceptance and subsequent publication authorization were explicitly granted on 2026-11-26; see the [acceptance record](TICKET12_ACCEPTANCE_20261126.md). Staging, commits, pushes, pull-request creation, merge, deployment through the existing Cloudflare configuration and isolated production verification are authorized. Main is connected to automatic production deployment. Actual rollout evidence belongs in the [publication plan](../plans/completed/ticket12-publication-live-verification.md).
 
 ## Observable Behavior
 
