@@ -22,7 +22,7 @@ Current implementation status (2026-11-26):
 - Ticket09 is **Implemented / Integrated verification PASS / User acceptance Accepted**; see [the acceptance record](docs/product/TICKET09_ACCEPTANCE_20261125.md).
 - Ticket10 is **Implemented / Integrated verification PASS / ChatGPT tri-axis PASS / User acceptance Accepted** under approved Q15; see [the acceptance record](docs/product/TICKET10_ACCEPTANCE_20261125.md).
 - Ticket11 is **Implemented / Integrated verification PASS / ChatGPT tri-axis PASS / User acceptance Accepted** under approved Q16. Its Git publication was merged in [PR #3](https://github.com/LonguniBIM/CrossDefense/pull/3); see [the acceptance record](docs/product/TICKET11_ACCEPTANCE_20261126.md).
-- The user selected **Cloudflare Workers Static Assets Free** and authorized deployment of the accepted application. Configuration and verification are tracked in [the deployment plan](docs/plans/active/cloudflare-static-deployment.md); provider account connection and live deployment must be observed before claiming publication.
+- The accepted application is **live on Cloudflare Workers Static Assets Free** at [crossdefense.dklong2308.workers.dev](https://crossdefense.dklong2308.workers.dev). Hosting preparation was merged in [PR #4](https://github.com/LonguniBIM/CrossDefense/pull/4); source, provider and live verification evidence are in [the completed deployment record](docs/plans/completed/cloudflare-static-deployment.md). The connected production branch is main.
 - Ticket12 remains **ON HOLD**. Ticket02/03 acceptance is not inferred. Suspended provider review/orchestration, WFP/G-R/G-P and refused-snapshot restrictions remain unchanged.
 
 ## Production application scaffold
@@ -33,8 +33,8 @@ See `docs/architecture/TECHNOLOGY_SELECTION_RESULT.md` and `docs/product/IMPLEME
 
 ## Intended next sequence
 
-1. Publish and verify the accepted Ticket11 application on Cloudflare Workers Static Assets Free.
-2. Follow the [deployment guide](docs/deployment/CLOUDFLARE_WORKERS.md) for build settings, account connection, live checks and recovery.
+1. Use [the live application](https://crossdefense.dklong2308.workers.dev) for the accepted Ticket11 slice; each browser profile and origin has its own local Workspace.
+2. Follow the [deployment guide](docs/deployment/CLOUDFLARE_WORKERS.md) for main-branch updates, deployment verification and recovery.
 3. Keep Ticket12 ON HOLD; production offline reload and safe updates are not implemented by this hosting change.
 
 ## High-level architecture
